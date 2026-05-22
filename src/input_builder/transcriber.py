@@ -9,6 +9,7 @@ from .config import settings
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class Transcriber:
     def __init__(self):
         # The model is loaded once when the transcriber is initialized
@@ -23,21 +24,22 @@ class Transcriber:
         )
         logger.info("Transcriber initialized")
 
-    def transcribe_sync(self, audio_data: io.BytesIO) -> str:
+    def transcribe_sync(self, audio_data: io.BytesIO, prompt: str) -> str:
         """Synchronous transcription logic intended to run in a thread pool."""
         start_time = time.time()
         logger.info("Starting transcription...")
 
-        segments, info = self.model.transcribe(audio_data, beam_size=5)
+        segments, info = self.model.transcribe(audio_data, beam_size=5, initial_prompt=prompt)
 
         # Combine segments into a single string
         text = " ".join([segment.text for segment in segments]).strip()
 
         duration = time.time() - start_time
-        logger.info(f"Transcription completed in {duration:.2f}s. Result: {text[:50]}...")
+        logger.info(f"Transcription completed in {duration:.2f}s. Prompt: {prompt[:50]}, Result: {text[:50]}...")
         return text
 
-    async def transcribe(self, audio_data: io.BytesIO) -> str:
+
+    async def transcribe(self, audio_data: io.BytesIO, prompt: str) -> str:
         """Asynchronous wrapper for the transcription logic."""
         import asyncio
         logger.info("Queuing transcription task...")
@@ -45,7 +47,8 @@ class Transcriber:
         return await loop.run_in_executor(
             self.executor,
             self.transcribe_sync,
-            audio_data
+            audio_data,
+            prompt
         )
 
 
