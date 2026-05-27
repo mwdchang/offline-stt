@@ -36,9 +36,6 @@ class Transcriber:
         if prompt is not None and prompt != "":
             kwargs["initial_prompt"] = prompt
 
-        # logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        # logger.info(f"!! {kwargs}")
-
         # segments, info = self.model.transcribe(audio_data, beam_size=5, initial_prompt=prompt)
         segments, info = self.model.transcribe(audio_data, **kwargs)
 

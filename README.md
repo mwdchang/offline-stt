@@ -1,12 +1,6 @@
 # Input Builder: Offline Speech-to-Text Service
 A lightweight, offline RESTful web service for transcribing audio to text. 
 
-## Features
-- **Offline Transcription**: Uses `faster-whisper` for high-accuracy local speech-to-text.
-- **Async API**: Built with FastAPI for high performance.
-- **Configurable**: Easily change model size and concurrency settings via environment variables.
-- **Optimized**: Transcription runs in a thread pool to avoid blocking the event loop.
-
 ## Installation
 Note `ffmpeg` is needed by `fast-whisper`, eg `brew install ffmpeg` or `apt update && apt install ffmpeg`
 
@@ -35,24 +29,29 @@ uvicorn src.input_builder.main:app --reload
 
 The API will be available at `http://127.0.0.1:8000`.
 
-## API Endpoints
 
-### `POST /upload`
-Upload an `audio/webm` file for transcription.
-
-**Request:**
-- `Content-Type: multipart/form-data`
-- `file`: The audio file blob.
-
-**Example using `curl`:**
+## Docker
 ```bash
-curl -X POST http://127.0.0.1:8000/upload \
-  -F "file=@/path/to/your/audio.webm;type=audio/webm"
+# build
+docker build -t <name> -f docker/Dockerfile .
+
+# run
+docker run -p 8000:8000 <name>
 ```
 
-**Response:**
-```json
-{
-  "text": "The transcribed text goes here."
-}
+## Testing
+```bash
+#!/usr/bin/env bash
+
+END_POINT=http://localhost:8000/upload
+FILE_PATH=$1
+PROMPT="$2"
+
+echo "File path: ${FILE_PATH}"
+echo "Prompt: ${PROMPT}"
+
+curl -X POST ${END_POINT} \
+  -F "audio=@/${FILE_PATH}" \
+  -F "context=${PROMPT}"
 ```
+
