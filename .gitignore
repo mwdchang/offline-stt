@@ -4,6 +4,10 @@ __pycache__/
 *$py.class
 .pytest_cache/
 
+# Web demo
+node_modules
+temp
+
 # Environments
 .env
 .venv

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-Voice Whisper POC</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        p { color: #666; margin-bottom: 2rem; }
+        button {
+            padding: 0.8rem 1.2rem;
+            font-size: 1.0rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: #0056b3; }
+        button.recording { background-color: #dc3545; }
+        button.recording:hover { background-color: #a71d2a; }
+        #status { margin-top: 1rem; font-weight: bold; color: #555; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h3>VAD/Speech to Text</h3>
+        <button id="micButton">Start Microphone</button>
+        <button id="noSockButton">Start no socket</button>
+        <div id="status">Ready</div>
+    </div>
+    <script src="app.js"></script>
+    <script>
+      // VAD - voice activity detection
+      async function main() {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: "audio/webm"
+        });
+        let audioChunks = []
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data)
+          }
+        }
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: "audio/webm" })
+          const formData = new FormData();
+          formData.append('audio', audioBlob, 'recording.webm');
+          formData.append('context', '');
+
+          audioChunks = [];
+          try {
+            const response = await fetch('/upload-proxy', {
+              method: 'POST',
+              body: formData
+            });
+            const result = await response.json();
+            console.log('Server response:', result);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+
+
+        const myvad = await vad.MicVAD.new({
+          onSpeechStart: () => {
+            console.log('VAD speech start');
+            audioChunks = [];
+            mediaRecorder.start();
+          },
+          onSpeechEnd: (audio) => {
+            console.log('VAD speech end');
+            mediaRecorder.stop();
+          },
+          onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/",
+          baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/",
+          debug: false,
+          logging: false,
+        })
+        myvad.start();
+      }
+      main();
+    </script>
+</body>
+</html>

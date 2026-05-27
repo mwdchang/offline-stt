@@ -40,6 +40,7 @@ docker run -p 8000:8000 <name>
 ```
 
 ## Testing
+Simple Test
 ```bash
 #!/usr/bin/env bash
 
@@ -54,4 +55,10 @@ curl -X POST ${END_POINT} \
   -F "audio=@/${FILE_PATH}" \
   -F "context=${PROMPT}"
 ```
+
+The `web` folder has a simple web app that proxies transcribing requests to the python service. It has 3 modalieis
+- socket-based explicit start/stop  
+- restapi-based explicit start/stop
+- vad-based
+
 
