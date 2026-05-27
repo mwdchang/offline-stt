@@ -1,4 +1,5 @@
 import io
+from typing import Optional
 from fastapi import FastAPI, Request, HTTPException, File, Form, UploadFile
 from .transcriber import transcriber
 
@@ -6,10 +7,9 @@ app = FastAPI(title="Speech-to-Text Service")
 
 
 @app.post("/upload")
-# async def upload_audio(request: Request):
 async def upload_audio(
     audio: UploadFile = File(...),
-    context: str = Form(...)
+    context: Optional[str] = Form(None)
 ):
     # Validate Content-Type header if present
     # Note: When proxying, Content-Type might be audio/webm or application/octet-stream

@@ -2,6 +2,7 @@ import concurrent.futures
 import io
 import logging
 import time
+from typing import Optional
 from faster_whisper import WhisperModel
 from .config import settings
 
@@ -24,18 +25,32 @@ class Transcriber:
         )
         logger.info("Transcriber initialized")
 
-    def transcribe_sync(self, audio_data: io.BytesIO, prompt: str) -> str:
+    def transcribe_sync(self, audio_data: io.BytesIO, prompt: Optional[str]) -> str:
         """Synchronous transcription logic intended to run in a thread pool."""
         start_time = time.time()
         logger.info("Starting transcription...")
 
-        segments, info = self.model.transcribe(audio_data, beam_size=5, initial_prompt=prompt)
+        kwargs = {
+            "beam_size": 5
+        }
+        if prompt is not None and prompt != "":
+            kwargs["initial_prompt"] = prompt
+
+        # logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        # logger.info(f"!! {kwargs}")
+
+        # segments, info = self.model.transcribe(audio_data, beam_size=5, initial_prompt=prompt)
+        segments, info = self.model.transcribe(audio_data, **kwargs)
 
         # Combine segments into a single string
         text = " ".join([segment.text for segment in segments]).strip()
 
         duration = time.time() - start_time
-        logger.info(f"Transcription completed in {duration:.2f}s. Prompt: {prompt[:50]}, Result: {text[:50]}...")
+        logger.info(f"Transcription completed in {duration:.2f}s.")
+        if prompt:
+            logger.info(f"Prompt: {prompt[:50]}...")
+        logger.info(f"Result: {text[:50]}...")
+        logger.info("")
         return text
 
 
