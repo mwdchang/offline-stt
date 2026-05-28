@@ -45,9 +45,12 @@
 <body>
     <div class="container">
         <h3>VAD/Speech to Text</h3>
+        <!--
         <button id="micButton">Start Microphone</button>
         <button id="noSockButton">Start no socket</button>
         <div id="status">Ready</div>
+        -->
+        <div id="container"></div>
     </div>
     <script src="app.js"></script>
     <script>
@@ -82,6 +85,13 @@
             });
             const result = await response.json();
             console.log('Server response:', result);
+
+            if (result.python && result.python.text) {
+              const msg = document.createElement('div')
+              msg.innerHTML = result.python.text;
+              document.getElementById('container').appendChild(msg);
+            }
+
           } catch (err) {
             console.error(err);
           }
