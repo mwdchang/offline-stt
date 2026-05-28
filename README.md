@@ -26,18 +26,9 @@ Start the server using `uvicorn`:
 ```bash
 uvicorn src.input_builder.main:app --reload
 ```
-
 The API will be available at `http://127.0.0.1:8000`.
 
 
-## Docker
-```bash
-# build
-docker build -t <name> -f docker/Dockerfile .
-
-# run
-docker run -p 8000:8000 <name>
-```
 
 ## Testing
 Simple Test
@@ -54,11 +45,31 @@ echo "Prompt: ${PROMPT}"
 curl -X POST ${END_POINT} \
   -F "audio=@/${FILE_PATH}" \
   -F "context=${PROMPT}"
+
+```
+eg:
+
+```
+./curl-test.sh ~/temp/whisper.webm "Exerpt on STT models using CTranslate2"
 ```
 
-The `web` folder has a simple web app that proxies transcribing requests to the python service. It has 3 modalieis
-- socket-based explicit start/stop  
-- restapi-based explicit start/stop
-- vad-based
 
+The `web` folder has a simple web app that calls the fast-whisper model as a micro-service
+```bash
+cd web
+npm install
+npm run dev
+```
+Open localhost:3000 in browser
+
+
+
+## Docker build:
+```bash
+# build
+docker build -t <name> -f docker/Dockerfile .
+
+# run
+docker run -p 8000:8000 <name>
+```
 
