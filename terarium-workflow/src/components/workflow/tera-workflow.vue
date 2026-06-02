@@ -387,6 +387,8 @@ onMounted(() => {
     { x: 1, y: 1 }
   ]);
 
+  wf.value.runDagreLayout();
+
 	currentProjectId.value = 'Testing';
 });
 
