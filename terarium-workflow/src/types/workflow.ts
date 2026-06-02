@@ -2,6 +2,7 @@ import type { Position } from '@/types/common';
 
 export const WorkflowOperationTypes = Object.freeze({
   DUMMY: 'DummyOperation',
+  DUMMY2: 'Dummy2Operation',
 });
 
 export enum OperatorStatus {

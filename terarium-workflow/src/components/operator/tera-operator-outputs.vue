@@ -39,6 +39,7 @@
 					/>
 				</div>
 			</section>
+      <!--
 			<Transition>
 				<tera-operator-menu
 					v-show="menuOptions.length && menuFocusId === output.id"
@@ -57,6 +58,7 @@
 					@menu-selection="(operatorType) => emit('menu-selection', operatorType, output)"
 				/>
 			</Transition>
+      -->
 			<!--TODO: We will see how to integrate port actions into this button later-->
 			<!-- <Button
 				size="small"
@@ -76,7 +78,6 @@ import { WorkflowPortStatus, WorkflowDirection } from '@/types/workflow';
 import Button from 'primevue/button';
 import type { OperatorMenuItem } from '@/services/workflow';
 import { getOutputLabel } from '@/services/workflow';
-import TeraOperatorMenu from '@/components/operator/tera-operator-menu.vue';
 
 const menuFocusId = ref<string | null>(null);
 

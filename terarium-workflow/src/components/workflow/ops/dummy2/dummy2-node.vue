@@ -1,17 +1,17 @@
 <template>
 	<main>
-    <div>{{ node.state.str }}</div>
+    <p>Drone model</p>
     <Button @click="emit('open-drilldown')">Drilldown</Button>
   </main>
 </template>
 
 <script setup lang="ts">
 import type { WorkflowNode } from '@/types/workflow';
-import type { DummyOperationState } from './dummy-operation';
+import type { Dummy2OperationState } from './dummy2-operation';
 import Button from 'primevue/button';
 
 const props = defineProps<{
-	node: WorkflowNode<DummyOperationState>;
+	node: WorkflowNode<Dummy2OperationState>;
 }>();
 const emit = defineEmits(['open-drilldown']);
 

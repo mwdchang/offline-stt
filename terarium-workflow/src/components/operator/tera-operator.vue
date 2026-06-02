@@ -24,12 +24,6 @@
 			@remove-edges="(portId: string) => emit('remove-edges', portId)"
 		/>
 		<section class="content">
-			<tera-operator-annotation
-				ref="annotationRef"
-				:state="node.state"
-				in-node
-				@update-state="(state: any) => emit('update-state', state)"
-			/>
 			<slot name="body" />
 		</section>
 		<tera-operator-outputs
@@ -53,7 +47,6 @@ import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
 import TeraOperatorHeader from '@/components/operator/tera-operator-header.vue';
 import TeraOperatorInputs from '@/components/operator/tera-operator-inputs.vue';
 import TeraOperatorOutputs from '@/components/operator/tera-operator-outputs.vue';
-import TeraOperatorAnnotation from '@/components/operator/tera-operator-annotation.vue';
 import type { OperatorMenuItem } from '@/services/workflow';
 
 const props = defineProps<{

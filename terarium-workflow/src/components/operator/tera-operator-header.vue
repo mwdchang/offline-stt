@@ -1,18 +1,14 @@
 <template>
 	<header :class="`${status} ${interactionClasses}`">
 		<span class="header-label">{{ name }}</span>
-		<Button icon="pi pi-ellipsis-v" class="p-button-icon-only p-button-text p-button-rounded" @click="toggleMenu" />
-		<Menu ref="menu" :model="options" :popup="true" />
 	</header>
 </template>
 
 <script setup lang="ts">
 import type { PropType } from 'vue';
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { isHover } from '@/services/operator-bitmask';
 import { OperatorStatus } from '@/types/workflow';
-import Button from 'primevue/button';
-import Menu from 'primevue/menu';
 
 const emit = defineEmits(['remove-operator', 'open-in-new-window', 'duplicate-branch', 'show-annotation-editor']);
 
@@ -37,20 +33,6 @@ const interactionClasses = computed(() => {
 	return classes.join(' ');
 });
 
-const menu = ref();
-const toggleMenu = (event: any) => {
-	menu.value.toggle(event);
-};
-
-const options = ref([
-	// { icon: 'pi pi-clone', label: 'Duplicate', command: () => emit('duplicate-branch') },
-	// {
-	// 	icon: 'pi pi-pencil',
-	// 	label: 'Add a note',
-	// 	command: () => emit('show-annotation-editor')
-	// },
-	// { icon: 'pi pi-trash', label: 'Remove', command: () => emit('remove-operator') }
-]);
 </script>
 
 <style scoped>

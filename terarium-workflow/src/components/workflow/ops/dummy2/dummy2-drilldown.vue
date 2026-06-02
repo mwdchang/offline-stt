@@ -11,14 +11,14 @@
 
 <script setup lang="ts">
 import type { WorkflowNode } from '@/types/workflow';
-import type { DummyOperationState } from '@/components/workflow/ops/dummy/dummy-operation';
+import type { Dummy2OperationState } from '@/components/workflow/ops/dummy2/dummy2-operation';
 
 import TeraDrilldown from '@/components/drilldown/tera-drilldown.vue';
 import TeraDrilldownSection from '@/components/drilldown/tera-drilldown-section.vue';
 
 
 const props = defineProps<{
-	node: WorkflowNode<DummyOperationState>;
+	node: WorkflowNode<Dummy2OperationState>;
 }>();
 
 const emit = defineEmits(['close', 'update-state', 'append-output']);

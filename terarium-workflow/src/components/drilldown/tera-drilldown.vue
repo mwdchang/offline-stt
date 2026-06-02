@@ -61,9 +61,6 @@
 					</template>
 				</template>
 				<template #actions>
-          <!--
-					<tera-operator-annotation :state="node.state" @update-state="(state: any) => emit('update-state', state)" />
-          -->
 					<slot name="header-actions" />
 				</template>
 			</tera-drilldown-header>
@@ -131,7 +128,6 @@ import type { TabViewChangeEvent } from 'primevue/tabview';
 import { type WorkflowNode } from '@/types/workflow';
 import TeraDrilldownHeader from '@/components/drilldown/tera-drilldown-header.vue';
 import TeraColumnarPanel from '@/components/widgets/tera-columnar-panel.vue';
-import TeraOperatorAnnotation from '@/components/operator/tera-operator-annotation.vue';
 import TeraOperatorPortIcon from '@/components/operator/tera-operator-port-icon.vue';
 import TeraOutputDropdown from '@/components/drilldown/tera-output-dropdown.vue';
 import TeraTooltip from '@/components/widgets/tera-tooltip.vue';
