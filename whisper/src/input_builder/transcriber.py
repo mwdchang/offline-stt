@@ -37,7 +37,10 @@ class Transcriber:
             kwargs["initial_prompt"] = prompt
 
         # segments, info = self.model.transcribe(audio_data, beam_size=5, initial_prompt=prompt)
-        segments, info = self.model.transcribe(audio_data, **kwargs)
+        try:
+            segments, info = self.model.transcribe(audio_data, **kwargs)
+        except Exception as e:
+            print(f"Transcription failed: {e}")
 
         # Combine segments into a single string
         text = " ".join([segment.text for segment in segments]).strip()

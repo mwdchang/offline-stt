@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+</body>
+<script type="module">
+import {
+  BaseStreamer,
+  VoxtralRealtimeForConditionalGeneration,
+  VoxtralRealtimeProcessor,
+} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0";
+
+
+
+const MODEL_ID = "onnx-community/Voxtral-Mini-4B-Realtime-2602-ONNX";
+const SAMPLE_RATE = 16000;
+const MODEL_FILE_COUNT = 3;
+const CAPTURE_PROCESSOR_NAME = "capture-processor";
+const CAPTURE_WORKLET_SOURCE = `
+  class CaptureProcessor extends AudioWorkletProcessor {
+    process(inputs) {
+      const input = inputs[0];
+      if (input.length > 0 && input[0].length > 0) {
+        this.port.postMessage(input[0]);
+      }
+      return true;
+    }
+  }
+  registerProcessor("capture-processor", CaptureProcessor);
+`;
+
+
+const progressCallback = (info) => {
+  console.log('progress', info.file, info.loaded / info.total);
+};
+
+
+const model = await VoxtralRealtimeForConditionalGeneration.from_pretrained(
+  MODEL_ID,
+  {
+    dtype: {
+      audio_encoder: "q4f16",
+      embed_tokens: "q4f16",
+      decoder_model_merged: "q4f16",
+    },
+    device: "webgpu",
+    progress_callback: progressCallback,
+  },
+);
+
+const processor = await VoxtralRealtimeProcessor.from_pretrained(MODEL_ID);
+
+
+let isRecording = true;
+const stream = await navigator.mediaDevices.getUserMedia({
+  audio: {
+    channelCount: 1,
+    sampleRate: SAMPLE_RATE,
+  },
+});
+const audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
+await audioContext.resume();
+
+const sourceNode = audioContext.createMediaStreamSource(stream);
+const silentGainNode = audioContext.createGain();
+silentGainNode.gain.value = 0;
+
+
+const workletBlob = new Blob([CAPTURE_WORKLET_SOURCE], {
+  type: "application/javascript",
+});
+const workletUrl = URL.createObjectURL(workletBlob);
+await audioContext.audioWorklet.addModule(workletUrl);
+URL.revokeObjectURL(workletUrl);
+
+
+const workletNode = new AudioWorkletNode(
+  audioContext,
+  CAPTURE_PROCESSOR_NAME,
+);
+workletNode.port.onmessage = (event) => {
+  if (isRecording) {
+    appendAudio(new Float32Array(event.data));
+  }
+};
+
+sourceNode.connect(workletNode);
+workletNode.connect(silentGainNode);
+silentGainNode.connect(audioContext.destination);
+
+
+await runTranscription(model, processor);
+
+</script>
+</html>

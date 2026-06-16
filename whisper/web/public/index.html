@@ -99,6 +99,13 @@
 
 
         const myvad = await vad.MicVAD.new({
+          // Tuning
+          positiveSpeechThreshold: 0.8,
+          negativeSpeechThreshold: 0.3,
+          redemptionFrames: 2,
+          preSpeechPadFrames: 1,
+          minSpeechFrames: 2,
+
           onSpeechStart: () => {
             console.log('VAD speech start');
             audioChunks = [];
