@@ -22,6 +22,11 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
+        .container div {
+          color: #382;
+        }
+
         h1 { color: #333; }
         p { color: #666; margin-bottom: 2rem; }
         button {
@@ -39,45 +44,70 @@
         button.recording:hover { background-color: #a71d2a; }
         #status { margin-top: 1rem; font-weight: bold; color: #555; }
     </style>
+    <!--
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"></script>
+    -->
     <script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/bundle.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h3>VAD/Speech to Text</h3>
-        <!--
-        <button id="micButton">Start Microphone</button>
-        <button id="noSockButton">Start no socket</button>
-        <div id="status">Ready</div>
-        -->
+        <h3>VAD + Whisper Speech to Text</h3>
+        <p style="grey">Speak into the mic, translation starts when you take a short pause.</p>
         <div id="container"></div>
     </div>
-    <script src="app.js"></script>
     <script>
+      function encodeWAV(samples, sampleRate = 16000) {
+        const start = Date.now();
+        const buffer = new ArrayBuffer(44 + samples.length * 2);
+        const view = new DataView(buffer);
+
+        const writeString = (offset, str) => {
+          for (let i = 0; i < str.length; i++) {
+            view.setUint8(offset + i, str.charCodeAt(i));
+          }
+        };
+
+        writeString(0, "RIFF");
+        view.setUint32(4, 36 + samples.length * 2, true);
+        writeString(8, "WAVE");
+        writeString(12, "fmt ");
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);      // PCM
+        view.setUint16(22, 1, true);      // mono
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeString(36, "data");
+        view.setUint32(40, samples.length * 2, true);
+
+        let offset = 44;
+        for (let i = 0; i < samples.length; i++) {
+          const s = Math.max(-1, Math.min(1, samples[i]));
+          view.setInt16(
+            offset,
+            s < 0 ? s * 0x8000 : s * 0x7fff,
+            true
+          );
+          offset += 2;
+        }
+        const end = Date.now();
+        console.log('encoding time', (end - start));
+        return new Blob([buffer], { type: "audio/wav" });
+      }
+
+
       // VAD - voice activity detection
       async function main() {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true
         });
 
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: "audio/webm"
-        });
-        let audioChunks = []
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunks.push(event.data)
-          }
-        }
-
-        mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunks, { type: "audio/webm" })
+        const transcribeSpeechWAV = async (wavBlob) => {
           const formData = new FormData();
-          formData.append('audio', audioBlob, 'recording.webm');
+          formData.append('audio', wavBlob, 'recording.wav');
           formData.append('context', '');
 
-          audioChunks = [];
           try {
             const response = await fetch('/upload-proxy', {
               method: 'POST',
@@ -93,26 +123,26 @@
             }
           } catch (err) {
             console.error(err);
+          } finally {
           }
         }
 
-
         const myvad = await vad.MicVAD.new({
           // Tuning
-          positiveSpeechThreshold: 0.8,
-          negativeSpeechThreshold: 0.3,
-          redemptionFrames: 2,
-          preSpeechPadFrames: 1,
-          minSpeechFrames: 2,
+          positiveSpeechThreshold: 0.65,
+
+          // Increase to shorten speech end detection
+          negativeSpeechThreshold: 0.5,
+
+          redemptionFrames: 5,
+          preSpeechPadFrames: 10,
+          minSpeechFrames: 1,
 
           onSpeechStart: () => {
-            console.log('VAD speech start');
-            audioChunks = [];
-            mediaRecorder.start();
           },
           onSpeechEnd: (audio) => {
-            console.log('VAD speech end');
-            mediaRecorder.stop();
+            const wav = encodeWAV(audio);
+            transcribeSpeechWAV(wav);
           },
           onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/",
           baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/",
