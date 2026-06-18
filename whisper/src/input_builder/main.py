@@ -32,9 +32,10 @@ async def upload_audio(
         audio_stream = io.BytesIO(content)
 
         # Perform transcription
-        print(f">> context is: {context}")
-        text = await transcriber.transcribe(audio_stream, context)
+        if context is not None:
+            print(f">> context is: {context}")
 
+        text = await transcriber.transcribe(audio_stream, context)
         return {"text": text}
 
     except Exception as e:

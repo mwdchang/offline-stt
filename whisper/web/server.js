@@ -74,6 +74,7 @@ function handleTranscription(filePath) {
 app.use(express.static('public'));
 
 
+const PROXY_ENDPOINT = 'http://127.0.0.1:8000/upload';
 
 
 app.post('/upload-proxy', async (req, res) => {
@@ -81,7 +82,7 @@ app.post('/upload-proxy', async (req, res) => {
     // console.log('Forwarding upload to Python server...', req.headers);
     console.log('Forwarding upload to Python server...');
 
-    const response = await fetch('http://127.0.0.1:8000/upload', {
+    const response = await fetch(PROXY_ENDPOINT, {
       method: 'POST',
       headers: {
         'content-type': req.headers['content-type'],
@@ -153,8 +154,15 @@ app.post('/upload', (req, res) => {
     });
 });
 
+
+
+/**
+ * Socket 
+ * When connection is established create a file to track messages send over socket.
+ * On connection close covert to webm file and run translation.
+**/
 wss.on('connection', (ws) => {
-  console.log('Client connected');
+  console.log('WS Client connected');
   
   const fileName = `audio_${Date.now()}.webm`;
   const filePath = path.join(TEMP_DIR, fileName);
@@ -185,10 +193,7 @@ server.listen(PORT, () => {
 });
 
 
-
-
 // Clean up on start
 // console.log('Clean up temp folder...');
 // const filePath = path.join(TEMP_DIR);
 // fs.unlinkSync(filePath);
-//

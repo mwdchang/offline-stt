@@ -31,7 +31,8 @@ class Transcriber:
         logger.info("Starting transcription...")
 
         kwargs = {
-            "beam_size": 5
+            "beam_size": 5,
+            "language": "en",
         }
         if prompt is not None and prompt != "":
             kwargs["initial_prompt"] = prompt
@@ -42,6 +43,9 @@ class Transcriber:
         except Exception as e:
             print(f"Transcription failed: {e}")
 
+        # Generator to list for debugging
+        segments = list(segments)
+
         # Combine segments into a single string
         text = " ".join([segment.text for segment in segments]).strip()
 
@@ -51,6 +55,9 @@ class Transcriber:
             logger.info(f"Prompt: {prompt[:50]}...")
         logger.info(f"Result: {text[:50]}...")
         logger.info("")
+
+        # for segment in segments:
+        #     logger.info(f"{segment}")
         return text
 
 
