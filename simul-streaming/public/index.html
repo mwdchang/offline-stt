@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SimuStreaming Transcription</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  margin: 40px;
+}
+
+#transcript {
+  border: 1px solid #ccc;
+  min-height: 250px;
+  padding: 12px;
+  white-space: pre-wrap;
+}
+</style>
+</head>
+<body>
+
+<h2>SimulStreaming Transcription</h2>
+<p> 
+  Transcription with SimulStreaming, using a Node adapter to proxy socket communications.
+  <br>
+  See <a href="https://github.com/ufal/SimulStreaming">https://github.com/ufal/SimulStreaming</a>
+</p>
+
+<button id="start">Start</button>
+<button id="stop" disabled>Stop</button>
+
+<h3>Transcript</h3>
+<div id="transcript"></div>
+
+<script>
+let ws;
+let stream;
+let audioContext;
+let processor;
+let source;
+
+const transcript = document.getElementById('transcript');
+
+function floatTo16BitPCM(samples) {
+  const buffer = new ArrayBuffer(samples.length * 2);
+  const view = new DataView(buffer);
+
+  for (let i = 0; i < samples.length; i++) {
+    let s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(
+      i * 2,
+      s < 0 ? s * 0x8000 : s * 0x7fff,
+      true
+    );
+  }
+  return buffer;
+}
+
+async function start() {
+  ws = new WebSocket( `ws://${location.host}/ws`);
+  ws.binaryType = 'arraybuffer';
+
+  ws.onopen = async () => {
+    console.log('websocket opened');
+    stream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
+
+    audioContext = new AudioContext({
+      sampleRate: 16000
+    });
+
+    source = audioContext.createMediaStreamSource(stream);
+    processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+    processor.onaudioprocess = (event) => {
+      if (ws.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
+      const input = event.inputBuffer.getChannelData(0);
+      const pcm16 = floatTo16BitPCM(input);
+      ws.send(pcm16);
+    };
+
+    source.connect(processor);
+    processor.connect(audioContext.destination);
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const obj = JSON.parse(event.data);
+      if (obj.text) {
+        transcript.textContent += obj.text;
+      } else {
+        transcript.textContent += event.data;
+      }
+    } catch {
+      transcript.textContent += event.data;
+    }
+    // transcript.textContent += '\n';
+    transcript.textContent += ' ';
+  };
+}
+
+async function stop() {
+  if (processor) processor.disconnect();
+  if (source) source.disconnect();
+
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+  }
+
+  if (audioContext) {
+    await audioContext.close();
+  }
+
+  if (ws) {
+    ws.close();
+  }
+}
+
+document.getElementById('start').onclick = start;
+document.getElementById('stop').onclick = stop;
+</script>
+
+</body>
+</html>

@@ -55,7 +55,8 @@
         <p style="grey">Speak into the mic, translation starts when you take a short pause.</p>
         <div id="container"></div>
     </div>
-    <script>
+    <script type="module">
+
       function encodeWAV(samples, sampleRate = 16000) {
         const start = Date.now();
         const buffer = new ArrayBuffer(44 + samples.length * 2);
@@ -93,16 +94,13 @@
         }
         const end = Date.now();
         console.log('encoding time', (end - start));
+
         return new Blob([buffer], { type: "audio/wav" });
       }
 
 
       // VAD - voice activity detection
       async function main() {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true
-        });
-
         const transcribeSpeechWAV = async (wavBlob) => {
           const formData = new FormData();
           formData.append('audio', wavBlob, 'recording.wav');
@@ -140,7 +138,7 @@
 
           onSpeechStart: () => {
           },
-          onSpeechEnd: (audio) => {
+          onSpeechEnd: async (audio) => {
             const wav = encodeWAV(audio);
             transcribeSpeechWAV(wav);
           },
