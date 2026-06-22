@@ -22,7 +22,7 @@ curl https://openaipublic.azureedge.net/main/whisper/models/d3dd57d32accea0b295c
 ```
 
 
-3. Run the streaming server and set parameters
+3. Run the streaming server and set parameters.
 
 ```
 python3 simulstreaming_whisper_server.py \
