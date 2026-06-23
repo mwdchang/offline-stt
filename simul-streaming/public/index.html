@@ -33,6 +33,7 @@ body {
 
 <h3>Transcript</h3>
 <div id="transcript"></div>
+<p id="speech"></p>
 
 <script>
 let ws;
@@ -58,9 +59,22 @@ function floatTo16BitPCM(samples) {
   return buffer;
 }
 
+/**
+ * Remove whisper non-word guesses 
+**/
+function cleanText(text) {
+  const out = text
+    .replace(/\[[^\]]+\]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return out;
+}
+
 async function start() {
   document.getElementById('start').disabled = true;
   document.getElementById('stop').disabled = false;
+
+  let speech = '';
 
   ws = new WebSocket(`ws://${location.host}/ws`);
   ws.binaryType = 'arraybuffer';
@@ -116,6 +130,9 @@ async function start() {
         container.appendChild(timeElem);
 
         transcript.appendChild(container);
+        speech += obj.text;
+        speech = cleanText(speech);
+        document.getElementById('speech').textContent = speech;
       }
     } catch {
     }
