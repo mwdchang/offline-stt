@@ -1244,37 +1244,6 @@ body {
   cursor: pointer;
 }
 
-/* Legend styling */
-.legend-panel {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  display: flex;
-  gap: 16px;
-  z-index: 10;
-  background-color: rgba(9, 13, 22, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--color-panel-border);
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 11px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--color-text-dimmed);
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  display: inline-block;
-}
-
 .compound-indicator {
   background-color: var(--color-bg-compound);
   border: 1.5px solid var(--color-border-compound);

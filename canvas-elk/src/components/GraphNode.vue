@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-// Define the interface for ELK node/edge shapes.
 interface ElkPoint {
   x: number;
   y: number;
