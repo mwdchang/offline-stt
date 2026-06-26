@@ -1,0 +1,298 @@
+composition_id: drone_platform
+description: Runs drone dynamics and battery models as a platform subsystem.
+inputs:
+  time_s:
+    type: float
+    unit: s
+    required: true
+    where:
+    - self >= 0.0
+  position_m:
+    type: 'list[float]'
+    unit: m
+    items:
+      where:
+      - self >= -100000.0
+      - self <= 100000.0
+    required: true
+    where:
+    - len(self) == 3
+    - 'self[2] >= 0.0'
+    - 'self[2] <= 3000.0'
+  heading_rad:
+    type: float
+    unit: rad
+    required: true
+    where:
+    - self >= -3.141592653589793
+    - self <= 3.141592653589793
+  commanded_velocity_mps:
+    type: 'list[float]'
+    unit: m/s
+    items:
+      where:
+      - self >= -100.0
+      - self <= 100.0
+    required: true
+    where:
+    - len(self) == 3
+  wind_mps:
+    type: 'list[float]'
+    unit: m/s
+    items:
+      where:
+      - self >= -100.0
+      - self <= 100.0
+    required: true
+    where:
+    - len(self) == 3
+    - 'self[0] * self[0] + self[1] * self[1] <= 225.0'
+  air_density_kg_m3:
+    type: float
+    unit: kg/m^3
+    required: true
+    where:
+    - self >= 0.8
+    - self <= 1.4
+  ambient_temperature_c:
+    type: float
+    unit: degC
+    required: true
+    where:
+    - self >= -80.0
+    - self <= 80.0
+  payload_kg:
+    type: float
+    unit: kg
+    required: true
+    where:
+    - self >= 0.0
+    - self <= 10.0
+  max_speed_mps:
+    type: float
+    unit: m/s
+    default: 22.0
+    where:
+    - self > 0.0
+    - self <= 22.0
+  dt_s:
+    type: float
+    unit: s
+    required: true
+    where:
+    - self > 0.0
+    - self <= 60.0
+  soc_percent:
+    type: float
+    unit: percent
+    required: true
+    where:
+    - self >= 0.0
+    - self <= 100.0
+    - self >= inputs.reserve_soc_percent
+  reserve_soc_percent:
+    type: float
+    unit: percent
+    required: true
+    where:
+    - self >= 0.0
+    - self <= 100.0
+  voltage_v:
+    type: float
+    unit: V
+    required: true
+    where:
+    - self >= 18.0
+    - self >= inputs.min_safe_voltage_v
+    - self <= 25.2
+  min_safe_voltage_v:
+    type: float
+    unit: V
+    default: 18.0
+    where:
+    - self >= 12.0
+    - self <= 25.2
+  nominal_voltage_v:
+    type: float
+    unit: V
+    default: 22.2
+    where:
+    - self >= 18.0
+    - self >= inputs.min_safe_voltage_v
+    - self <= 25.2
+  battery_temperature_c:
+    type: float
+    unit: degC
+    required: true
+    where:
+    - self >= -40.0
+    - self <= 80.0
+    - self <= inputs.max_temperature_c
+  max_temperature_c:
+    type: float
+    unit: degC
+    default: 60.0
+    where:
+    - self > 0.0
+    - self <= 80.0
+  health_percent:
+    type: float
+    unit: percent
+    required: true
+    where:
+    - self > 0.0
+    - self <= 100.0
+  capacity_wh:
+    type: float
+    unit: Wh
+    default: 600.0
+    where:
+    - self >= 100.0
+    - self <= 2000.0
+  internal_resistance_ohm:
+    type: float
+    unit: ohm
+    default: 0.08
+    where:
+    - self >= 0.0
+    - self <= 1.0
+  max_continuous_power_w:
+    type: float
+    unit: W
+    default: 900.0
+    where:
+    - self >= 900.0
+    - self <= 2000.0
+  max_peak_power_w:
+    type: float
+    unit: W
+    default: 1400.0
+    where:
+    - self >= 1400.0
+    - self <= 3000.0
+outputs:
+  next_position_m:
+    from: $drone.next_position_m
+    type: 'list[float]'
+    unit: m
+    items:
+      where:
+      - self >= -100000.0
+      - self <= 100000.0
+    where:
+    - len(self) == 3
+  next_heading_rad:
+    from: $drone.next_heading_rad
+    type: float
+    unit: rad
+  drone_warnings:
+    from: $drone.warnings
+    type: 'list[str]'
+    where:
+    - len(self) >= 0
+    - len(self) <= 16
+  required_power_w:
+    from: $drone.required_power_w
+    type: float
+    unit: W
+    where:
+    - self >= 0.0
+    - self <= inputs.max_continuous_power_w
+  peak_power_w:
+    from: $drone.peak_power_w
+    type: float
+    unit: W
+    where:
+    - self >= 0.0
+    - self >= outputs.required_power_w
+    - self <= inputs.max_peak_power_w
+  battery_warnings:
+    from: $battery.warnings
+    type: 'list[str]'
+    where:
+    - len(self) >= 0
+    - len(self) <= 16
+  next_soc_percent:
+    from: $battery.next_soc_percent
+    type: float
+    unit: percent
+    where:
+    - self >= 0.0
+    - self <= 100.0
+    - self <= inputs.soc_percent
+  next_voltage_v:
+    from: $battery.next_voltage_v
+    type: float
+    unit: V
+    where:
+    - self >= 0.0
+  next_battery_temperature_c:
+    from: $battery.next_battery_temperature_c
+    type: float
+    unit: degC
+    where:
+    - self >= -50.0
+    - self <= 100.0
+  next_health_percent:
+    from: $battery.next_health_percent
+    type: float
+    unit: percent
+    where:
+    - self > 0.0
+    - self <= 100.0
+    - self == inputs.health_percent
+  dt_s:
+    from: $battery.dt_s
+    type: float
+    unit: s
+    where:
+    - self > 0.0
+    - self == inputs.dt_s
+  time_s:
+    from: $battery.time_s
+    type: float
+    unit: s
+    where:
+    - self >= 0.0
+    - self == inputs.time_s
+  next_time_s:
+    from: $battery.next_time_s
+    type: float
+    unit: s
+    where:
+    - self > 0.0
+    - self == inputs.time_s + inputs.dt_s
+nodes:
+- id: drone
+  model: drone
+  inputs:
+    position_m: $inputs.position_m
+    heading_rad: $inputs.heading_rad
+    time_s: $inputs.time_s
+    commanded_velocity_mps: $inputs.commanded_velocity_mps
+    wind_mps: $inputs.wind_mps
+    air_density_kg_m3: $inputs.air_density_kg_m3
+    payload_kg: $inputs.payload_kg
+    max_speed_mps: $inputs.max_speed_mps
+    dt_s: $inputs.dt_s
+- id: battery
+  model: battery
+  inputs:
+    soc_percent: $inputs.soc_percent
+    voltage_v: $inputs.voltage_v
+    battery_temperature_c: $inputs.battery_temperature_c
+    health_percent: $inputs.health_percent
+    required_power_w: $drone.required_power_w
+    peak_power_w: $drone.peak_power_w
+    capacity_wh: $inputs.capacity_wh
+    nominal_voltage_v: $inputs.nominal_voltage_v
+    min_safe_voltage_v: $inputs.min_safe_voltage_v
+    reserve_soc_percent: $inputs.reserve_soc_percent
+    internal_resistance_ohm: $inputs.internal_resistance_ohm
+    max_continuous_power_w: $inputs.max_continuous_power_w
+    max_peak_power_w: $inputs.max_peak_power_w
+    max_temperature_c: $inputs.max_temperature_c
+    ambient_temperature_c: $inputs.ambient_temperature_c
+    dt_s: $drone.dt_s
+    time_s: $drone.time_s
+
