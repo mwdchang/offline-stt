@@ -4,7 +4,7 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 import { presets, type ElkNode, type ElkExtendedEdge, type ElkEdgeSection } from './presets';
 import GraphNode from './components/GraphNode.vue';
 import { yaml2json } from './utils';
-import { v4 as uuidv4 } from 'uuid';
+import { parseBethune } from './parsers';
 
 // App States
 const selectedPresetId = ref('weather_land_battery');
@@ -153,7 +153,6 @@ function calculateLayout() {
   });
 }
 
-
 // Presets Loading
 function loadPreset(id: string) {
   const preset = presets.find(p => p.id === id);
@@ -163,93 +162,11 @@ function loadPreset(id: string) {
     hoveredNodeId.value = null;
     hoveredEdge.value = null;
     
-    // Deep clone to keep presets clean from direct edits
-    // const cleanGraph = JSON.parse(JSON.stringify(preset.graph));
-    // rawGraphData.value = JSON.stringify(cleanGraph, null, 2);
-    
-
     const bethuneObj = yaml2json(preset.graph);
-
     const rootNode: ElkNode = {
       id: bethuneObj.composition_id,
       children: [],
       edges: []
-    };
-
-    // Parse bethune's composite model scheme
-    const parseBethune = (bethuneNode: any, currentNode: ElkNode, path: string) => {
-      // Default place holder external variables
-      currentNode.children!.push({
-        id: `${path}.inputs`,
-        labels: [{ text: 'Inputs' }],
-        width: 80,
-        height: 250,
-      });
-
-      // Normal models
-      bethuneNode.nodes.forEach((n: any) => {
-        if (n.composition) return;
-
-        // Node
-        currentNode.children!.push({
-          id: `${path}.${n.id}`,
-          labels: [{ text: n.model }],
-          width: 120,
-          height: 80,
-        });
-
-        // Edge
-        const inputs = Object.keys(n.inputs);
-        inputs.forEach((inputKey: any) => {
-          const v = n.inputs[inputKey];
-          if (typeof v !== 'string') {
-            return;
-          }
-          const src = v.split('.')[0]!.replace('$', '');
-
-          currentNode.edges!.push({
-            id: uuidv4(),
-            sources: [`${path}.${src}`],
-            targets: [`${path}.${n.id}`]
-          });
-        });
-      });
-
-      // Composite models
-      bethuneNode.nodes.forEach((n: any) => {
-        if (n.model) return;
-        
-        const composite: ElkNode = {
-          id: `${path}.${n.id}`,
-          labels: [{ text: n.composition }],
-          children: [],
-          edges: []
-        }
-        currentNode.children!.push(composite);
-
-        // Edge
-        const inputs = Object.keys(n.inputs);
-        inputs.forEach((inputKey: any) => {
-          const v = n.inputs[inputKey]; 
-          if (typeof v !== 'string') {
-            return;
-          }
-          const src = v.split('.')[0]!.replace('$', '');
-
-          currentNode.edges!.push({
-            id: uuidv4(),
-            sources: [`${path}.${src}`],
-            targets: [`${path}.${n.id}`]
-          });
-        });
-
-        // Recurse into composite models
-        const nextBethuneObj = yaml2json(
-          presets.find(d => d.id === n.composition)!.graph 
-        );
-        
-        parseBethune(nextBethuneObj, composite, `${path}.${n.id}`);
-      });
     };
 
     parseBethune(bethuneObj, rootNode, bethuneObj.composition_id);
@@ -285,13 +202,6 @@ function fitToScreen() {
   zoom.value = newZoom;
   panX.value = (cw - gw * newZoom) / 2;
   panY.value = (ch - gh * newZoom) / 2;
-}
-
-function resetViewport() {
-  zoom.value = 1;
-  panX.value = 50;
-  panY.value = 50;
-  fitToScreen();
 }
 
 function zoomIn() {
@@ -340,7 +250,6 @@ function handleWheel(e: WheelEvent) {
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
-
   const dx = mouseX - panX.value;
   const dy = mouseY - panY.value;
 
@@ -456,7 +365,6 @@ onMounted(() => {
           <button @click="zoomIn" title="Zoom In">＋</button>
           <button @click="zoomOut" title="Zoom Out">－</button>
           <button @click="fitToScreen" title="Fit View to Screen">⛶</button>
-          <button @click="resetViewport" title="Reset Viewport Position">⟲</button>
           <div class="zoom-indicator">{{ Math.round(zoom * 100) }}%</div>
         </div>
 
@@ -495,7 +403,7 @@ onMounted(() => {
                 markerHeight="5"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 1.5 L 8 5 L 0 8.5 z" class="marker-path-default" />
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" class="marker-path-default" fill="context-stroke" />
               </marker>
 
               <!-- Arrow head marker for active/highlighted lines -->
@@ -508,7 +416,7 @@ onMounted(() => {
                 markerHeight="6"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 1.5 L 8 5 L 0 8.5 z" class="marker-path-active" />
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" class="marker-path-active" fill="context-stroke" />
               </marker>
 
               <!-- Arrow head marker for hovered lines -->
@@ -521,13 +429,8 @@ onMounted(() => {
                 markerHeight="6"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 1.5 L 8 5 L 0 8.5 z" class="marker-path-hovered" />
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" class="marker-path-hovered" fill="context-stroke" />
               </marker>
-
-              <!-- Background Grid Pattern -->
-              <pattern id="grid-pattern" width="30" height="30" patternUnits="userSpaceOnUse">
-                <path d="M 30 0 L 0 0 0 30" fill="none" class="grid-line" />
-              </pattern>
             </defs>
 
             <!-- Main Transformed Contents Group -->
@@ -876,12 +779,6 @@ body {
 
 .viewport-svg {
   display: block;
-}
-
-/* Grid drawing */
-.grid-line {
-  stroke: rgba(255, 255, 255, 0.015);
-  stroke-width: 1.2px;
 }
 
 /* Controls */
