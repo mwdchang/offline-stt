@@ -9,14 +9,17 @@ import { v4 as uuidv4 } from 'uuid';
 // App States
 const selectedPresetId = ref('weather_land_battery');
 const colorTheme = ref('neon-purple');
+const isLoading = ref(false);
+const enableFlowAnimation = ref(true);
+
+
+// Layout configurations
 const layoutDirection = ref<'RIGHT' | 'DOWN' | 'LEFT' | 'UP'>('RIGHT');
 const edgeRouting = ref<'ORTHOGONAL' | 'SPLINES' | 'POLYLINE'>('ORTHOGONAL');
 const spacingNodeNode = ref(35);
 const spacingEdgeNode = ref(20);
 const layoutPadding = ref(25);
-const isLoading = ref(false);
-const showGrid = ref(true);
-const enableFlowAnimation = ref(true);
+
 
 const rawGraphData = ref('');
 const renderedGraph = ref<ElkNode | null>(null);
@@ -120,12 +123,8 @@ function refreshSelectedNode() {
   }
 }
 
-const jsonError = ref<string | null>(null);
-
 // Perform the ELK layout computation
 function calculateLayoutSilently() {
-  jsonError.value = null;
-  
   try {
     const graph = JSON.parse(rawGraphData.value);
     applyLayoutOptions(graph, true);
@@ -137,10 +136,10 @@ function calculateLayoutSilently() {
         refreshSelectedNode();
       })
       .catch((err: any) => {
-        jsonError.value = `ELK Layout Error: ${err.message || err}`;
+        console.error(err);
       });
   } catch (err: any) {
-    jsonError.value = `JSON Parse Error: ${err.message}`;
+    console.error(err);
   }
 }
 
@@ -374,41 +373,6 @@ function isEdgeHovered(edge: ElkExtendedEdge): boolean {
          (edge.sources.includes(hoveredNodeId.value) || edge.targets.includes(hoveredNodeId.value));
 }
 
-// Helper node getters and setters
-function getNodeLabel(node: ElkNode): string {
-  return node.labels?.[0]?.text || node.id;
-}
-
-function updateNodeLabelFromInput(e: Event) {
-  const inputEl = e.target as HTMLInputElement;
-  const newLabel = inputEl.value;
-  if (!selectedNode.value) return;
-
-  try {
-    const graph = JSON.parse(rawGraphData.value);
-    const updateLabel = (n: any): boolean => {
-      if (n.id === selectedNode.value?.id) {
-        if (!n.labels) n.labels = [{}];
-        n.labels[0].text = newLabel;
-        return true;
-      }
-      if (n.children) {
-        for (const child of n.children) {
-          if (updateLabel(child)) return true;
-        }
-      }
-      return false;
-    };
-
-    if (updateLabel(graph)) {
-      rawGraphData.value = JSON.stringify(graph, null, 2);
-      calculateLayoutSilently();
-    }
-  } catch (err) {
-    // Ignore parse errors as user is typing
-  }
-}
-
 // Hover event callbacks
 function onHoverNode(id: string | null) {
   hoveredNodeId.value = id;
@@ -422,23 +386,6 @@ function onHoverEdge(edge: ElkExtendedEdge | null) {
   hoveredEdge.value = edge;
 }
 
-// Helper to apply edited JSON manually
-function applyJSON() {
-  calculateLayout();
-}
-
-// Helper to insert spaces when pressing Tab in JSON editor
-function insertTab(e: Event) {
-  const textarea = e.target as HTMLTextAreaElement;
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const value = textarea.value;
-  
-  textarea.value = value.substring(0, start) + '  ' + value.substring(end);
-  textarea.selectionStart = textarea.selectionEnd = start + 2;
-  rawGraphData.value = textarea.value;
-}
-
 onMounted(() => {
   loadPreset(selectedPresetId.value);
 });
@@ -448,17 +395,10 @@ onMounted(() => {
   <div class="app-container" :class="`theme-${colorTheme}`">
     <!-- Header -->
     <header class="app-header">
-      <div class="header-logo">
-        <div class="logo-text">
-          <h1>ELK.js Canvas</h1>
-          <span>Compounded Graph Layout Explorer</span>
-        </div>
-      </div>
-      
       <div class="header-actions">
         <!-- Preset Dropdown -->
         <div class="control-group">
-          <label>Preset Structure:</label>
+          <label>Model:</label>
           <select :value="selectedPresetId" @change="onPresetChange($event)">
             <option v-for="p in presets" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
@@ -466,7 +406,7 @@ onMounted(() => {
 
         <!-- Theme Selector -->
         <div class="control-group">
-          <label>Theme Preset:</label>
+          <label>Theme:</label>
           <select v-model="colorTheme">
             <option value="neon-purple">Cyber Purple</option>
             <option value="matrix-green">Matrix Green</option>
@@ -476,7 +416,7 @@ onMounted(() => {
 
         <button class="btn btn-primary" @click="calculateLayout" :disabled="isLoading">
           <span v-if="isLoading" class="spinner"></span>
-          <span>Re-Layout Graph</span>
+          <span>Reset</span>
         </button>
       </div>
     </header>
@@ -506,34 +446,6 @@ onMounted(() => {
             </select>
           </div>
 
-          <!--
-          <div class="setting-row">
-            <label>Node-to-Node Spacing ({{ spacingNodeNode }}px)</label>
-            <input type="range" min="15" max="80" v-model.number="spacingNodeNode" @change="calculateLayout" />
-          </div>
-
-          <div class="setting-row">
-            <label>Edge-to-Node Spacing ({{ spacingEdgeNode }}px)</label>
-            <input type="range" min="10" max="60" v-model.number="spacingEdgeNode" @change="calculateLayout" />
-          </div>
-
-          <div class="setting-row">
-            <label>Compound Inner Padding ({{ layoutPadding }}px)</label>
-            <input type="range" min="10" max="60" v-model.number="layoutPadding" @change="calculateLayout" />
-          </div>
-          -->
-        </div>
-
-        <!-- Section 4: Raw JSON Definition -->
-        <div class="sidebar-section json-section">
-          <div class="json-header">
-            <h3>Raw Graph structure (JSON)</h3>
-            <button class="btn btn-sm btn-secondary" @click="applyJSON">Apply Code</button>
-          </div>
-          <textarea v-model="rawGraphData" class="json-textarea" @keydown.tab.prevent="insertTab($event)"></textarea>
-          <div v-if="jsonError" class="json-error-banner">
-            {{ jsonError }}
-          </div>
         </div>
       </aside>
 
@@ -551,9 +463,6 @@ onMounted(() => {
         <!-- Float settings controls -->
         <div class="canvas-settings">
           <label>
-            <input type="checkbox" v-model="showGrid" /> Draw Grid
-          </label>
-          <label>
             <input type="checkbox" v-model="enableFlowAnimation" /> Edge Flow Animations
           </label>
         </div>
@@ -561,7 +470,7 @@ onMounted(() => {
         <!-- Canvas Frame -->
         <div
           class="canvas-viewport"
-          :class="{ 'is-dragging': isDragging, 'has-grid': showGrid }"
+          :class="{ 'is-dragging': isDragging }"
           @pointerdown="handlePointerDown"
           @pointermove="handlePointerMove"
           @pointerup="handlePointerUp"
@@ -620,9 +529,6 @@ onMounted(() => {
                 <path d="M 30 0 L 0 0 0 30" fill="none" class="grid-line" />
               </pattern>
             </defs>
-
-            <!-- Render the interactive mesh grid background -->
-            <rect v-if="showGrid" width="100%" height="100%" fill="url(#grid-pattern)" style="pointer-events: none;" />
 
             <!-- Main Transformed Contents Group -->
             <g :transform="`translate(${panX}, ${panY}) scale(${zoom})`" class="viewport-content-group">
@@ -803,39 +709,6 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo-icon {
-  font-size: 28px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 6px var(--color-primary-glow));
-}
-
-.logo-text h1 {
-  font-family: var(--font-title);
-  font-size: 19px;
-  font-weight: 800;
-  margin: 0;
-  letter-spacing: -0.02em;
-  background: linear-gradient(180deg, #fff, #b4c2d3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.logo-text span {
-  font-size: 10px;
-  color: var(--color-text-dimmed);
-  opacity: 0.7;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
 .header-actions {
   display: flex;
   align-items: center;
@@ -907,23 +780,6 @@ body {
   box-shadow: 0 0 15px var(--color-primary-glow);
 }
 
-.btn-secondary {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: var(--color-text-bright);
-  border: 1px solid var(--color-panel-border);
-}
-
-.btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.btn-sm {
-  padding: 4px 8px;
-  font-size: 10px;
-  border-radius: 4px;
-}
-
 /* Sidebar structure */
 .app-body {
   display: flex;
@@ -957,14 +813,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-text-dimmed);
-  margin: 0;
-  opacity: 0.8;
-}
-
-.preset-description {
-  font-size: 12px;
-  color: var(--color-text-dimmed);
-  line-height: 1.5;
   margin: 0;
   opacity: 0.8;
 }
@@ -1003,134 +851,6 @@ body {
   accent-color: var(--color-primary);
   width: 100%;
   cursor: pointer;
-}
-
-/* Inspector Details styling */
-.inspector-details {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background-color: rgba(255, 255, 255, 0.015);
-  border: 1px solid var(--color-panel-border);
-  padding: 14px;
-  border-radius: 8px;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.inspector-badge {
-  align-self: flex-start;
-  font-size: 9px;
-  font-weight: 800;
-  text-transform: uppercase;
-  background-color: var(--color-accent-glow);
-  color: var(--color-accent-light);
-  padding: 3px 8px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
-}
-
-.inspector-badge.compound-badge {
-  background-color: var(--color-primary-glow);
-  color: var(--color-primary-light);
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-}
-
-.detail-label {
-  color: var(--color-text-dimmed);
-  opacity: 0.75;
-}
-
-.detail-val {
-  font-weight: 500;
-}
-
-.monospace {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  background-color: rgba(255, 255, 255, 0.04);
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.inspector-input {
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--color-panel-border);
-  color: var(--color-text-bright);
-  padding: 5px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  width: 140px;
-  outline: none;
-  transition: all 0.2s;
-}
-
-.inspector-input:focus {
-  border-color: var(--color-primary);
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-.inspector-placeholder {
-  font-size: 11px;
-  color: var(--color-text-dimmed);
-  text-align: center;
-  padding: 24px 10px;
-  opacity: 0.55;
-  line-height: 1.4;
-}
-
-/* Code area */
-.json-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border-bottom: none;
-  min-height: 220px;
-}
-
-.json-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.json-textarea {
-  flex: 1;
-  background-color: #030509;
-  border: 1px solid var(--color-panel-border);
-  border-radius: 8px;
-  color: #e2e8f0;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 1.5;
-  padding: 10px;
-  resize: none;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.json-textarea:focus {
-  border-color: var(--color-primary);
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.json-error-banner {
-  background-color: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  color: #fca5a5;
-  font-size: 10px;
-  font-family: var(--font-mono);
-  padding: 8px 12px;
-  border-radius: 6px;
-  line-height: 1.4;
-  word-break: break-all;
-  margin-top: 4px;
 }
 
 /* Canvas viewport */
@@ -1242,33 +962,6 @@ body {
 .canvas-settings input[type="checkbox"] {
   accent-color: var(--color-primary);
   cursor: pointer;
-}
-
-.compound-indicator {
-  background-color: var(--color-bg-compound);
-  border: 1.5px solid var(--color-border-compound);
-  box-shadow: 0 0 4px var(--color-primary-glow);
-}
-
-.leaf-indicator {
-  background-color: var(--color-bg-leaf);
-  border: 1.5px solid var(--color-border-leaf);
-  box-shadow: 0 0 4px var(--color-accent-glow);
-}
-
-.edge-indicator {
-  background-color: var(--color-edge);
-  height: 2px;
-  width: 16px;
-  border-radius: 0;
-}
-
-.flow-indicator {
-  background-color: var(--color-accent-light);
-  height: 2px;
-  width: 16px;
-  border-radius: 0;
-  box-shadow: 0 0 6px var(--color-accent-glow);
 }
 
 /* Edge elements */
