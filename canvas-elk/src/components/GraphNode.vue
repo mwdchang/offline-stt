@@ -170,7 +170,6 @@ const nodeStyles = computed(() => {
       </g>
       
       <text x="16" y="46" class="node-subtitle">
-        ID: {{ node.id }}
       </text>
     </g>
 

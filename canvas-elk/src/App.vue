@@ -4,7 +4,7 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 import { presets, type ElkNode, type ElkExtendedEdge, type ElkEdgeSection } from './presets';
 import GraphNode from './components/GraphNode.vue';
 import { yaml2json } from './utils';
-import { parseBethune } from './parsers';
+import { parseBethune, parseBethuneCollapsed } from './parsers';
 
 // App States
 const selectedPresetId = ref('weather_land_battery');
