@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import { presets, type ElkNode, type ElkExtendedEdge, type ElkEdgeSection } from './presets';
 import GraphNode from './components/GraphNode.vue';
@@ -11,6 +11,7 @@ const selectedPresetId = ref('weather_land_battery');
 const colorTheme = ref('neon-purple');
 const isLoading = ref(false);
 const enableFlowAnimation = ref(true);
+const enableEdgeCollapse = ref(false);
 
 
 // Layout configurations
@@ -169,7 +170,12 @@ function loadPreset(id: string) {
       edges: []
     };
 
-    parseBethune(bethuneObj, rootNode, bethuneObj.composition_id);
+    if (enableEdgeCollapse.value) {
+      parseBethuneCollapsed(bethuneObj, rootNode, bethuneObj.composition_id);
+    } else {
+      parseBethune(bethuneObj, rootNode, bethuneObj.composition_id);
+    }
+
     rawGraphData.value = JSON.stringify(rootNode, null, 2);
     calculateLayout();
   }
@@ -298,6 +304,15 @@ function onHoverEdge(edge: ElkExtendedEdge | null) {
 onMounted(() => {
   loadPreset(selectedPresetId.value);
 });
+
+
+watch(
+  () => [enableEdgeCollapse.value],
+  () => {
+    loadPreset(selectedPresetId.value)
+  }
+)
+
 </script>
 
 <template>
@@ -372,6 +387,9 @@ onMounted(() => {
         <div class="canvas-settings">
           <label>
             <input type="checkbox" v-model="enableFlowAnimation" /> Edge Flow Animations
+          </label>
+          <label>
+            <input type="checkbox" v-model="enableEdgeCollapse" /> Edge Collapse
           </label>
         </div>
 
