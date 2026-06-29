@@ -3,6 +3,12 @@ import { presets } from './presets';
 import { v4 as uuidv4 } from 'uuid';
 import { yaml2json } from './utils';
 
+// Artifical "input" node.
+const INPUT_NODE = {
+  width: 80,
+  height: 250,
+}
+
 /**
  * Parse bethune's composite model scheme
 **/
@@ -11,8 +17,8 @@ const parseBethune = function recurse(bethuneNode: any, currentNode: ElkNode, pa
   currentNode.children!.push({
     id: `${path}.inputs`,
     labels: [{ text: 'Inputs' }],
-    width: 80,
-    height: 250,
+    width: INPUT_NODE.width,
+    height: INPUT_NODE.height
   });
 
   const handleEdges = (n: any) => {
@@ -78,8 +84,8 @@ const parseBethuneCollapsed = function recurse(bethuneNode: any, currentNode: El
   currentNode.children!.push({
     id: `${path}.inputs`,
     labels: [{ text: 'Inputs' }],
-    width: 80,
-    height: 250,
+    width: INPUT_NODE.width,
+    height: INPUT_NODE.height
   });
 
   const handleEdges = (n: any) => {
