@@ -14,7 +14,6 @@
 			:interaction-status="interactionStatus"
 			@remove-operator="emit('remove-operator', props.node.id)"
 			@duplicate-branch="emit('duplicate-branch')"
-			@show-annotation-editor="if (annotationRef) annotationRef.isEditing = true;"
 		/>
 		<tera-operator-inputs
 			:inputs="node.inputs"
@@ -73,7 +72,6 @@ enum PortType {
 
 const operator = ref<HTMLElement>();
 const interactionStatus = ref(0); // States will be added to it thorugh bitmasking
-const annotationRef = ref<typeof TeraOperatorAnnotation | null>(null);
 const menuOptions = ref<OperatorMenuItem[] | []>([]);
 
 let resizeObserver: ResizeObserver | null = null;
@@ -118,8 +116,7 @@ onBeforeUnmount(() => {
 	}
 });
 
-const isEditing = computed(() => annotationRef.value?.isEditing ?? false);
-defineExpose({ isEditing, id: props.node.id });
+defineExpose({ id: props.node.id });
 </script>
 
 <style scoped>

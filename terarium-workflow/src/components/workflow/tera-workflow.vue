@@ -1,7 +1,6 @@
 <template>
 	<!-- add 'debug-mode' to debug this -->
 	<tera-infinite-canvas
-		ref="canvasRef"
 		@click="onCanvasClick()"
 		@contextmenu="toggleContextMenu"
 		@save-transform="saveTransform"
@@ -31,7 +30,7 @@
 				<tera-operator
 					ref="teraOperatorRefs"
 					:node="node"
-					:nodeMenu="outputPortMenu"
+					:nodeMenu="new Map()"
 					@resize="resizeHandler"
 					@port-mouseover="onPortMouseover"
 					@port-mouseleave="onPortMouseleave"
@@ -141,12 +140,10 @@ import * as TaskOp from './ops/task/mod';
 const registry = new workflowService.WorkflowRegistry();
 registry.registerOp(TaskOp);
 
-// Will probably be used later to save the workflow in the project
 const props = defineProps<{
 	assetId: string;
 }>();
 
-const outputPortMenu = ref(workflowService.getNodeMenu(registry.operationMap));
 const upstreamOperatorsNav = ref<MenuItem[]>([]);
 const downstreamOperatorsNav = ref<MenuItem[]>([]);
 const drilldownSpawnAnimation = ref<'left' | 'right' | 'scale'>('scale');
@@ -170,7 +167,6 @@ const contextMenu = ref();
 const currentProjectId = ref<string | null>(null);
 
 const teraOperatorRefs = ref();
-const canvasRef = ref();
 
 const nodePositionSet: Set<string> = new Set();
 const edgePositionSet: Set<string> = new Set();

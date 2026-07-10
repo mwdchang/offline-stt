@@ -31,33 +31,6 @@
 					<div class="truncate text-right">{{ getOutputLabel(outputs, output.id) }}</div>
 				</div>
 			</section>
-      <!--
-			<Transition>
-				<tera-operator-menu
-					v-show="menuOptions.length && menuFocusId === output.id"
-					:nodeMenu="menuOptions"
-					:style="{
-						height: '2rem',
-						position: 'absolute',
-						right: '-3.5rem',
-						bottom: '0px'
-					}"
-					@click.stop
-					@mousedown.stop
-					@mouseup.stop
-					@menu-focus="menuFocusId = output.id"
-					@menu-blur="menuFocusId = null"
-					@menu-selection="(operatorType) => emit('menu-selection', operatorType, output)"
-				/>
-			</Transition>
-      -->
-			<!--TODO: We will see how to integrate port actions into this button later-->
-			<!-- <Button
-				size="small"
-				text
-				label="output.actionLabel"
-				@click.stop="console.log('Do output.action() here')"
-			/> -->
 		</li>
 	</ul>
 </template>

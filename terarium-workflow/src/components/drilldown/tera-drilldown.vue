@@ -39,15 +39,6 @@
 			>
 				{{ title ?? node.displayName }}
 				<template #top-header-actions>
-					<template v-if="!hideDropdown && outputOptions && selectedOutputId">
-						<section v-if="isDraft">There are unsaved changes</section>
-						<tera-output-dropdown
-							:class="{ draft: isDraft }"
-							:options="outputOptions"
-							:output="selectedOutputId"
-							@update:selection="(e: any) => emit('update:selection', e)"
-						/>
-					</template>
 				</template>
 				<template #actions>
 					<slot name="header-actions" />
@@ -116,7 +107,6 @@ import type { TabViewChangeEvent } from 'primevue/tabview';
 import { type WorkflowNode } from '@/types/workflow';
 import TeraDrilldownHeader from '@/components/drilldown/tera-drilldown-header.vue';
 import TeraColumnarPanel from '@/components/widgets/tera-columnar-panel.vue';
-import TeraOutputDropdown from '@/components/drilldown/tera-output-dropdown.vue';
 import TeraTooltip from '@/components/widgets/tera-tooltip.vue';
 
 const props = defineProps<{

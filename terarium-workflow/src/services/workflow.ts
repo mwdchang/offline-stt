@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 import {
 	type Operation,
-	type OperationData,
 	type Workflow,
 	type WorkflowNode,
 	type WorkflowOutput,
@@ -86,7 +85,7 @@ export class WorkflowWrapper {
 		});
 
 		this.getEdges().forEach((edge) => {
-			g.setEdge(edge.source, edge.target);
+			g.setEdge(edge.source!, edge.target!);
 		});
 
 		dagre.layout(g);
@@ -97,10 +96,6 @@ export class WorkflowWrapper {
 			node.x = n.x;
 			node.y = n.y;
 		});
-	}
-
-	setWorkflowName(name: string) {
-		this.wf.name = name;
 	}
 
 	addNode(op: Operation, pos: Position, options: { size?: OperatorNodeSize; state?: any }) {
@@ -152,7 +147,6 @@ export class WorkflowWrapper {
 		return node;
 	}
 
-
 	addEdge(sourceId: string, sourcePortId: string, targetId: string, targetPortId: string, points: Position[]) {
 		const sourceNode = this.wf.nodes.find((d) => d.id === sourceId);
 		const targetNode = this.wf.nodes.find((d) => d.id === targetId);
@@ -171,49 +165,6 @@ export class WorkflowWrapper {
 				d.targetPortId === targetPortId
 		);
 		if (existingEdge) return;
-
-		// Check if type is compatible
-		const outputTypes = sourceOutputPort.type.split('|').map((d) => d.trim());
-		const allowedInputTypes = targetInputPort.type.split('|').map((d) => d.trim());
-		const intersectionTypes = _.intersection(outputTypes, allowedInputTypes);
-
-		// Not supported if there are more than one match
-		if (intersectionTypes.length > 1) {
-			console.error(`Ambiguous matching types [${outputTypes}] to [${allowedInputTypes}]`);
-			return;
-		}
-
-		// Not supported if there is a mismatch
-		if (intersectionTypes.length === 0 || targetInputPort.status === WorkflowPortStatus.CONNECTED) {
-			return;
-		}
-
-		// check if the port value is unique, if so, we should not connect the incoming edge
-		if (
-			targetNode.inputs.some(
-				(input) => targetNode.uniqueInputs && input.value?.[0] && input.value?.[0] === sourceOutputPort.value?.[0]
-			)
-		) {
-			return;
-		}
-
-		// Transfer data value/reference
-		targetInputPort.label = sourceOutputPort.label;
-		if (outputTypes.length > 1) {
-			const concreteType = intersectionTypes[0];
-			if (sourceOutputPort.value) {
-				targetInputPort.value = [sourceOutputPort.value[0][concreteType!]];
-			}
-		} else {
-			targetInputPort.value = sourceOutputPort.value;
-		}
-
-		// Transfer concrete type to the input type to match the output type
-		// Saves the original type in case we want to revert when we unlink the edge
-		if (allowedInputTypes.length > 1) {
-			targetInputPort.originalType = targetInputPort.type;
-			targetInputPort.type = sourceOutputPort.type;
-		}
 
 		const edge: WorkflowEdge = {
 			id: uuidv4(),
@@ -322,95 +273,9 @@ export class WorkflowRegistry {
 		this.nodeMap.delete(name);
 		this.drilldownMap.delete(name);
 	}
-
-}
-
-
-///
-// Operator
-///
-
-/**
- * Update the output of a node referenced by the output id
- * @param node
- * @param updatedOutput
- */
-export function updateOutput(node: WorkflowNode<any>, updatedOutput: WorkflowOutput<any>) {
-	const foundOutput = node.outputs.find((output) => output.id === updatedOutput.id);
-	if (foundOutput) {
-		Object.assign(foundOutput, updatedOutput);
-	}
 }
 
 export interface OperatorMenuItem {
 	type: string;
 	displayName: string;
 }
-
-function assetToOperation(operationMap: Map<string, Operation>) {
-	const result = new Map<string, OperatorMenuItem[]>();
-	operationMap.forEach((operation, key) => {
-		const inputList: Array<OperationData> = operation.inputs ?? [];
-		inputList.forEach((input) => {
-			input.type.split('|').forEach((subType) => {
-				if (!result.has(subType)) {
-					result.set(subType, []);
-				}
-				result.get(subType)?.push({
-					type: key,
-					displayName: operation.displayName
-				});
-			});
-		});
-	});
-	return result;
-}
-
-function operationToAsset(operationMap: Map<string, Operation>) {
-	const result = new Map<string, string[]>();
-
-	operationMap.forEach((operation, key) => {
-		result.set(key, []);
-
-		const outputList: OperationData[] = operation.outputs ?? [];
-		outputList.forEach((output) => {
-			output.type.split('|').forEach((subType) => {
-				result.get(key)?.push(subType);
-			});
-		});
-	});
-	return result;
-}
-
-/* We want to get mapping of { operation => [operation] } */
-export function getNodeMenu(operationMap: Map<string, Operation>) {
-	const menuOptions = new Map<string, OperatorMenuItem[]>();
-
-	const inputMap = assetToOperation(operationMap);
-	const outputMap = operationToAsset(operationMap);
-
-	// Going from
-	//   outputMap(Operator => assetId[]) => inputMap(assetId => Operator[]) ;
-	//
-	// For example
-	//   Calibrate => [datasetId, modelConfig] => [Validate, Simulate, DataTransform...]
-	outputMap.forEach((assetTypes, operationKey) => {
-		const check = new Set<String>();
-		const menuItems: OperatorMenuItem[] = [];
-
-		assetTypes.forEach((assetType) => {
-			const availableInputOperations = inputMap.get(assetType) ?? [];
-
-			availableInputOperations.forEach((item) => {
-				if (!check.has(item.type)) {
-					check.add(item.type);
-					menuItems.push(item);
-				}
-			});
-		});
-		menuOptions.set(operationKey, menuItems);
-	});
-
-	return menuOptions;
-}
-
