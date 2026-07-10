@@ -7,11 +7,11 @@
 
 <script setup lang="ts">
 import type { WorkflowNode } from '@/types/workflow';
-import type { Dummy2OperationState } from './dummy2-operation';
+import type { TaskOperationState } from './task-operation';
 import Button from 'primevue/button';
 
 const props = defineProps<{
-	node: WorkflowNode<Dummy2OperationState>;
+	node: WorkflowNode<TaskOperationState>;
 }>();
 const emit = defineEmits(['open-drilldown']);
 

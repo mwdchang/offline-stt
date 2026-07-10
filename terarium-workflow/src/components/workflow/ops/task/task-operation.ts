@@ -1,10 +1,10 @@
 import type { Operation, BaseState } from '@/types/workflow';
 import { WorkflowOperationTypes } from '@/types/workflow';
 
-export interface Dummy2OperationState extends BaseState {
+export interface TaskOperationState extends BaseState {
 }
 
-export const Dummy2Operation: Operation = {
+export const TaskOperation: Operation = {
 	name: WorkflowOperationTypes.DUMMY2,
 	displayName: 'Dummy2',
 	description: 'Testing',
@@ -12,8 +12,8 @@ export const Dummy2Operation: Operation = {
 	imageUrl: undefined,
 	isRunnable: true,
 	inputs: [
-    { type: 'string', label: 'v' },
-    { type: 'string', label: 'v' }
+    { type: 'string', label: '' },
+    { type: 'string', label: '' }
   ],
 	outputs: [{ type: 'string', label: '' }],
 	action: async () => ({}),

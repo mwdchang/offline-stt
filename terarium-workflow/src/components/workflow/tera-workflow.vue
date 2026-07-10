@@ -136,12 +136,10 @@ import * as d3 from 'd3';
 import type { MenuItem } from 'primevue/menuitem';
 import { useRouter, useRoute } from 'vue-router';
 
-import * as DummyOp from './ops/dummy/mod';
-import * as Dummy2Op from './ops/dummy2/mod';
+import * as TaskOp from './ops/task/mod';
 
 const registry = new workflowService.WorkflowRegistry();
-registry.registerOp(DummyOp);
-registry.registerOp(Dummy2Op);
+registry.registerOp(TaskOp);
 
 // Will probably be used later to save the workflow in the project
 const props = defineProps<{
@@ -373,9 +371,9 @@ onMounted(() => {
   const testWF: Workflow = workflowService.emptyWorkflow();
   wf.value.load(testWF);
 
-  const n1 = wf.value.addNode(DummyOp.operation, { x: 300, y: 200 }, { state: { str: 'weather model' }})
-  const n2 = wf.value.addNode(DummyOp.operation, { x: 300, y: 600 }, { state: { str: 'route model' }})
-  const n3 = wf.value.addNode(Dummy2Op.operation, { x: 600, y: 400 }, { state: { str: 'drone model' }})
+  const n1 = wf.value.addNode(TaskOp.operation, { x: 300, y: 200 }, { state: { str: 'weather model' }})
+  const n2 = wf.value.addNode(TaskOp.operation, { x: 300, y: 600 }, { state: { str: 'route model' }})
+  const n3 = wf.value.addNode(TaskOp.operation, { x: 600, y: 400 }, { state: { str: 'drone model' }})
 
   wf.value.addEdge(n1.id, n1.outputs[0]!.id, n3.id, n3.inputs[0]!.id, [
     { x: 0, y: 0 },
@@ -386,9 +384,7 @@ onMounted(() => {
     { x: 0, y: 0 },
     { x: 1, y: 1 }
   ]);
-
   wf.value.runDagreLayout();
-
 	currentProjectId.value = 'Testing';
 });
 

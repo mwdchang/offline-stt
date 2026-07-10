@@ -60,19 +60,6 @@ export class WorkflowWrapper {
 		return this.wf.edges.filter((d) => d.isDeleted !== true);
 	}
 
-	getAnnotations() {
-		if (this.wf.annotations) {
-			return Object.values(this.wf.annotations);
-		}
-		return [];
-	}
-
-	updateNodeState(nodeId: string, state: any) {
-		const node = this.getNodes().find((d) => d.id === nodeId);
-		if (!node) return;
-		node.state = state;
-	}
-
 	// Get neighbor nodes for drilldown navigation
 	getNeighborNodes = (id: string) => {
 		const cache = new Map(this.getNodes().map((node) => [node.id, node]));
@@ -115,10 +102,6 @@ export class WorkflowWrapper {
 
 	setWorkflowName(name: string) {
 		this.wf.name = name;
-	}
-
-	setWorkflowScenario(scenario: any) {
-		this.wf.scenario = scenario;
 	}
 
 	addNode(op: Operation, pos: Position, options: { size?: OperatorNodeSize; state?: any }) {
@@ -301,7 +284,6 @@ export function getPortLabel({ label, type, isOptional }: WorkflowPort) {
 	}
 
 	if (isOptional) portLabel = portLabel.concat(' (optional)');
-
 	return portLabel;
 }
 

@@ -11,12 +11,12 @@ export interface NotificationItemStatus {
 }
 
 export enum ProgressState {
-    Cancelled = "CANCELLED",
-    Complete = "COMPLETE",
-    Error = "ERROR",
-    Failed = "FAILED",
-    Queued = "QUEUED",
-    Retrieving = "RETRIEVING",
-    Running = "RUNNING",
-    Cancelling = "CANCELLING",
+  Cancelled = "CANCELLED",
+  Complete = "COMPLETE",
+  Error = "ERROR",
+  Failed = "FAILED",
+  Queued = "QUEUED",
+  Retrieving = "RETRIEVING",
+  Running = "RUNNING",
+  Cancelling = "CANCELLING",
 }

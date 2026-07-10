@@ -5,7 +5,6 @@
 </template>
 
 <style scoped>
-/**FIXME: Moved these rules from tera-drilldown, Double check if this is really all needed, seems overkill */
 main {
 	display: grid;
 	grid-auto-flow: column;
