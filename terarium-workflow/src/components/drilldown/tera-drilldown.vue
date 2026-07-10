@@ -1,33 +1,5 @@
 <template>
 	<aside class="overlay-container">
-		<tera-tooltip
-			:class="{ 'no-connections': isEmpty(upstreamOperatorsNav?.[0]?.items) }"
-			:show-tooltip="!(upstreamMenu as any)?.focused"
-		>
-			<Button
-				ref="leftChevronButton"
-				icon="pi pi-chevron-left"
-				outlined
-				severity="secondary"
-				@click="toggleNavigationMenu($event, upstreamMenu, upstreamOperatorsNav)"
-			/>
-			<Menu ref="upstreamMenu" class="ml-5" popup :model="upstreamOperatorsNav" :pt="menuPt" />
-			<template #tooltip-content>
-				<span class="operator-nav-info">
-					<template v-if="upstreamOperatorsNav?.[0]?.items?.length === 1">
-						<label>Upstream operator</label>
-						<span>
-							<i :class="upstreamOperatorsNav[0].items[0]?.icon" />
-							<label>{{ upstreamOperatorsNav[0].items[0]?.label }}</label>
-						</span>
-					</template>
-					<label v-else>Upstream operators</label>
-					<span class="kbd-shortcut">
-						<kbd>Shift</kbd>+<kbd><i class="pi pi-arrow-left" /></kbd>
-					</span>
-				</span>
-			</template>
-		</tera-tooltip>
 		<section v-bind="$attrs" :class="spawnAnimationRef">
 			<tera-drilldown-header
 				:active-index="selectedViewIndex"
@@ -65,35 +37,6 @@
 				<slot name="footer" />
 			</footer>
 		</section>
-		<tera-tooltip
-			:class="{ 'no-connections': isEmpty(downstreamOperatorsNav?.[0]?.items) }"
-			:show-tooltip="!(downstreamMenu as any)?.focused"
-			position="left"
-		>
-			<Button
-				ref="rightChevronButton"
-				icon="pi pi-chevron-right"
-				outlined
-				severity="secondary"
-				@click="toggleNavigationMenu($event, downstreamMenu, downstreamOperatorsNav)"
-			/>
-			<Menu ref="downstreamMenu" class="-ml-5" popup :model="downstreamOperatorsNav" :pt="menuPt" />
-			<template #tooltip-content>
-				<span class="operator-nav-info">
-					<template v-if="downstreamOperatorsNav?.[0]?.items?.length === 1">
-						<label>Downstream operator</label>
-						<span>
-							<i :class="downstreamOperatorsNav[0].items[0]?.icon" />
-							<label>{{ downstreamOperatorsNav[0].items[0]?.label }}</label>
-						</span>
-					</template>
-					<label v-else>Downstream operators</label>
-					<span class="kbd-shortcut">
-						<kbd>Shift</kbd>+<kbd><i class="pi pi-arrow-right" /></kbd>
-					</span>
-				</span>
-			</template>
-		</tera-tooltip>
 	</aside>
 </template>
 
@@ -107,7 +50,7 @@ import type { TabViewChangeEvent } from 'primevue/tabview';
 import { type WorkflowNode } from '@/types/workflow';
 import TeraDrilldownHeader from '@/components/drilldown/tera-drilldown-header.vue';
 import TeraColumnarPanel from '@/components/widgets/tera-columnar-panel.vue';
-import TeraTooltip from '@/components/widgets/tera-tooltip.vue';
+
 
 const props = defineProps<{
 	node: WorkflowNode<any>;
@@ -149,35 +92,13 @@ const handleTabChange = (event: TabViewChangeEvent) => {
 const selectedTab = computed(() => views.value[selectedViewIndex.value]);
 defineExpose({ selectedTab });
 
-const selectedOutputId = computed(() => props.node.active ?? null);
-
-const outputOptions = computed(() => {
-	if (isEmpty(props.node.outputs)) return [];
-
-	return [
-		{
-			label: 'Select an output',
-			items: props.node.outputs
-		}
-	];
-});
 
 // Drilldown navigation and animations
 const leftChevronButton = ref<ComponentPublicInstance<typeof Button> | null>(null);
 const rightChevronButton = ref<ComponentPublicInstance<typeof Button> | null>(null);
 const upstreamMenu = ref<Menu | null>(null);
 const downstreamMenu = ref<Menu | null>(null);
-const menuPt = {
-	root: {
-		style: 'margin-top: -6rem; width: auto; height: auto;'
-	},
-	submenuHeader: {
-		style: 'color: var(--text-color-subdued); font-weight: var(--font-weight); padding-top: 0.2rem; '
-	},
-	icon: {
-		style: 'color: var(--text-color);'
-	}
-};
+
 const toggleNavigationMenu = (
 	event: MouseEvent | KeyboardEvent,
 	menu: Menu | null,
@@ -236,12 +157,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyNavigation));
 	gap: var(--gap-1);
 	backdrop-filter: blur(2px);
 
-	/* There is a performance issue with these large modals.
-	When scrolling it takes time to render the content, particularly heavy content such as the LLM integrations. This will show
-	us the main application behind the modal temporarily as content loads when scrolling which is a bit of an eye sore.
-	An extra div here is used to alleviate the impact of these issues a little by allowing us to see the overlay container rather
-	than the main application behind the modal when these render issues come, however this is still an issue regardless.
-	*/
 	& > section {
 		flex: 1;
 		background: var(--surface-0);
@@ -295,29 +210,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyNavigation));
 	}
 }
 
-.chips {
-	display: flex;
-	gap: var(--gap-1);
-	margin-right: auto;
-	overflow-x: auto;
-	scrollbar-width: thin;
-}
-
 footer {
 	padding: 0 1.5rem 1rem 1.5rem;
 	display: flex;
 	justify-content: flex-end;
 	gap: 0.5rem;
-}
-
-.p-chip {
-	background-color: var(--surface-section);
-	color: var(--text-color-primary);
-}
-
-:deep(.p-chip .p-chip-text) {
-	font-size: 13px;
-	margin: var(--gap-0-5);
 }
 
 .draft {
