@@ -2,11 +2,7 @@
 	<aside class="overlay-container">
 		<section v-bind="$attrs" :class="spawnAnimationRef">
 			<tera-drilldown-header
-				:active-index="selectedViewIndex"
-				:views="views"
-				:tooltip="tooltip"
 				:documentation-url="node.documentationUrl"
-				@tab-change="handleTabChange"
 				@close="emit('on-close-clicked')"
 			>
 				{{ title ?? node.displayName }}
@@ -20,11 +16,6 @@
 				<slot name="sidebar" />
 				<tera-columnar-panel class="flex-1">
 					<template v-for="(tab, index) in tabs" :key="index">
-						<!--
-							TODO: We used to use v-show here but it ruined the rendering of tera-model-diagram
-							if it was in the unselected tab. For now we are using v-if but we may want to
-							use css to hide the unselected tab content instead.
-						-->
 						<component :is="tab" v-if="selectedViewIndex === index" />
 					</template>
 					<section v-if="slots.preview">
@@ -46,7 +37,6 @@ import { ref, computed, onMounted, onUnmounted, useSlots, type ComponentPublicIn
 import Button from 'primevue/button';
 import Menu from 'primevue/menu';
 import type { MenuItem, MenuItemCommandEvent } from 'primevue/menuitem';
-import type { TabViewChangeEvent } from 'primevue/tabview';
 import { type WorkflowNode } from '@/types/workflow';
 import TeraDrilldownHeader from '@/components/drilldown/tera-drilldown-header.vue';
 import TeraColumnarPanel from '@/components/widgets/tera-columnar-panel.vue';
@@ -82,15 +72,8 @@ const tabs = computed(() => {
 	return [];
 });
 
-const views = computed(() => tabs.value.map((vnode) => vnode.props?.tabName));
-
 const selectedViewIndex = ref<number>(0);
-const handleTabChange = (event: TabViewChangeEvent) => {
-	selectedViewIndex.value = event.index;
-};
 
-const selectedTab = computed(() => views.value[selectedViewIndex.value]);
-defineExpose({ selectedTab });
 
 
 // Drilldown navigation and animations
