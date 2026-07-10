@@ -187,14 +187,12 @@ export class WorkflowWrapper {
  * Captures common actions performed on workflow nodes/edges. The functions here are
  * not optimized, on the account that we don't expect most workflow graphs to
  * exceed say ... 10-12 nodes with 30-40 edges.
- *
  */
 export const emptyWorkflow = (name: string = 'test', description: string = '') => {
 	const workflow: Workflow = {
 		id: uuidv4(),
 		name,
 		description,
-
 		transform: { x: 0, y: 0, k: 1 },
 		nodes: [],
 		edges: []

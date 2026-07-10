@@ -128,10 +128,6 @@ import TeraOperator from '@/components/operator/tera-operator.vue';
 import * as workflowService from '@/services/workflow';
 import * as d3 from 'd3';
 
-// import ContextMenu from 'primevue/contextmenu';
-// import type { OperatorImport } from '@/services/workflow';
-// import { OperatorNodeSize } from '@/services/workflow';
-
 import type { MenuItem } from 'primevue/menuitem';
 import { useRouter, useRoute } from 'vue-router';
 
@@ -376,7 +372,7 @@ onMounted(() => {
     { x: 1, y: 1 }
   ]);
 
-  wf.value.addEdge(n2.id, n2.outputs[0]!.id, n3.id, n3.inputs[1]!.id, [
+  wf.value.addEdge(n2.id, n2.outputs[0]!.id, n3.id, n3.inputs[0]!.id, [
     { x: 0, y: 0 },
     { x: 1, y: 1 }
   ]);
@@ -391,33 +387,4 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/*
-.toolbar {
-	align-items: center;
-	background-color: var(--surface-transparent);
-	border-bottom: 1px solid var(--surface-border-light);
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	padding: var(--gap-1) var(--gap-4);
-	z-index: 900;
-}
-*/
-
-.button-group {
-	align-items: center;
-	display: flex;
-	flex-direction: row;
-	gap: var(--gap-3);
-}
-
-.rename-workflow {
-	align-items: center;
-	display: flex;
-	flex-wrap: nowrap;
-}
-
-.warning-banner {
-	height: 0;
-}
 </style>
