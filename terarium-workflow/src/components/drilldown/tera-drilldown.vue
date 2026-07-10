@@ -39,17 +39,6 @@
 			>
 				{{ title ?? node.displayName }}
 				<template #top-header-actions>
-					<aside class="chips">
-						<Chip
-							v-for="(input, index) in node.inputs.filter((input) => input.value)"
-							:key="index"
-							:label="input.label"
-						>
-							<template #icon>
-								<tera-operator-port-icon v-if="input.type" :portType="input.type" />
-							</template>
-						</Chip>
-					</aside>
 					<template v-if="!hideDropdown && outputOptions && selectedOutputId">
 						<section v-if="isDraft">There are unsaved changes</section>
 						<tera-output-dropdown
@@ -119,16 +108,14 @@
 
 <script setup lang="ts">
 import { isEmpty } from 'lodash';
-import { ref, computed, onMounted, onUnmounted, useSlots, ComponentPublicInstance } from 'vue';
+import { ref, computed, onMounted, onUnmounted, useSlots, type ComponentPublicInstance } from 'vue';
 import Button from 'primevue/button';
-import Chip from 'primevue/chip';
 import Menu from 'primevue/menu';
 import type { MenuItem, MenuItemCommandEvent } from 'primevue/menuitem';
 import type { TabViewChangeEvent } from 'primevue/tabview';
 import { type WorkflowNode } from '@/types/workflow';
 import TeraDrilldownHeader from '@/components/drilldown/tera-drilldown-header.vue';
 import TeraColumnarPanel from '@/components/widgets/tera-columnar-panel.vue';
-import TeraOperatorPortIcon from '@/components/operator/tera-operator-port-icon.vue';
 import TeraOutputDropdown from '@/components/drilldown/tera-output-dropdown.vue';
 import TeraTooltip from '@/components/widgets/tera-tooltip.vue';
 

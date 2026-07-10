@@ -19,16 +19,7 @@
 				</div>
 				<div class="relative w-full">
 					<div class="truncate text-left">
-						{{ getPortLabel(input) }}
 					</div>
-					<Button
-						class="unlink"
-						label="Unlink"
-						size="small"
-						icon="pi pi-unlock"
-						text
-						@click.stop="emit('remove-edges', input.id)"
-					/>
 				</div>
 			</section>
 		</li>
@@ -39,10 +30,8 @@
 import type { PropType } from 'vue';
 import type { WorkflowPort }from '@/types/workflow';
 import { WorkflowPortStatus, WorkflowDirection } from '@/types/workflow';
-import { getPortLabel } from '@/services/workflow';
-import Button from 'primevue/button';
 
-const emit = defineEmits(['port-mouseover', 'port-selected', 'port-mouseover', 'port-mouseleave', 'remove-edges']);
+const emit = defineEmits(['port-mouseover', 'port-selected', 'port-mouseover', 'port-mouseleave' ]);
 
 defineProps({
 	inputs: {

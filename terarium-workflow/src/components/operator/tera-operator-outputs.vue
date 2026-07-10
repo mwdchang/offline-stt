@@ -29,14 +29,6 @@
 				</div>
 				<div class="relative w-full">
 					<div class="truncate text-right">{{ getOutputLabel(outputs, output.id) }}</div>
-					<Button
-						class="unlink"
-						label="Unlink"
-						size="small"
-						icon="pi pi-unlock"
-						text
-						@click.stop="emit('remove-edges', output.id)"
-					/>
 				</div>
 			</section>
       <!--
@@ -75,7 +67,6 @@ import type { PropType } from 'vue';
 import { computed, ref } from 'vue';
 import type { WorkflowOutput } from '@/types/workflow';
 import { WorkflowPortStatus, WorkflowDirection } from '@/types/workflow';
-import Button from 'primevue/button';
 import type { OperatorMenuItem } from '@/services/workflow';
 import { getOutputLabel } from '@/services/workflow';
 
@@ -86,7 +77,6 @@ const emit = defineEmits([
 	'port-selected',
 	'port-mouseover',
 	'port-mouseleave',
-	'remove-edges',
 	'menu-selection'
 ]);
 

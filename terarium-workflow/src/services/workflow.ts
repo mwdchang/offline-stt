@@ -6,7 +6,6 @@ import {
 	type OperationData,
 	type Workflow,
 	type WorkflowNode,
-	type WorkflowPort,
 	type WorkflowOutput,
     WorkflowPortStatus,
     OperatorStatus,
@@ -257,34 +256,6 @@ export enum OperatorNodeSize {
 	medium,
 	large,
 	xlarge
-}
-
-// Get port label for frontend
-const defaultPortLabels: Record<string, string> = {
-	modelId: 'Model',
-	modelConfigId: 'Model configuration',
-	datasetId: 'Dataset',
-	simulationId: 'Simulation',
-	codeAssetId: 'Code asset'
-};
-
-export function getPortLabel({ label, type, isOptional }: WorkflowPort) {
-	let portLabel = type; // Initialize to port type (fallback)
-
-	// Assign to name of port value
-	if (label) portLabel = label;
-	// Assign to default label using port type
-	else if (defaultPortLabels[type]) {
-		portLabel = defaultPortLabels[type];
-	}
-	// Create name if there are multiple types
-	else if (type.includes('|')) {
-		const types = type.split('|').map((d) => d.trim());
-		portLabel = types.map((t) => defaultPortLabels[t] ?? t).join(' or ');
-	}
-
-	if (isOptional) portLabel = portLabel.concat(' (optional)');
-	return portLabel;
 }
 
 export function getOutputLabel(outputs: WorkflowOutput<any>[], id: string) {

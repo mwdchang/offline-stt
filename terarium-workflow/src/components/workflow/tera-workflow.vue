@@ -395,6 +395,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/*
 .toolbar {
 	align-items: center;
 	background-color: var(--surface-transparent);
@@ -405,6 +406,7 @@ onUnmounted(() => {
 	padding: var(--gap-1) var(--gap-4);
 	z-index: 900;
 }
+*/
 
 .button-group {
 	align-items: center;
