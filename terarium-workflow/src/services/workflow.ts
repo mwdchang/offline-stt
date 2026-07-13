@@ -5,7 +5,6 @@ import {
 	type Operation,
 	type Workflow,
 	type WorkflowNode,
-	type WorkflowOutput,
     WorkflowPortStatus,
     OperatorStatus,
     type WorkflowEdge,
@@ -34,6 +33,10 @@ export class WorkflowWrapper {
 		this.wf = _.cloneDeep(wf);
 	}
 
+  get() {
+    return this.wf;
+  }
+
 	dump() {
 		return this.wf;
 	}
@@ -51,11 +54,11 @@ export class WorkflowWrapper {
 	}
 
 	getNodes() {
-		return this.wf.nodes.filter((d) => d.isDeleted !== true);
+		return this.wf.nodes;
 	}
 
 	getEdges() {
-		return this.wf.edges.filter((d) => d.isDeleted !== true);
+		return this.wf.edges;
 	}
 
 	// Get neighbor nodes for drilldown navigation
@@ -110,12 +113,8 @@ export class WorkflowWrapper {
 			x: pos.x,
 			y: pos.y,
 
-			createdBy: 'dummy',
-			createdAt: Date.now(),
-
 			active: null,
 			state: options.state ?? {},
-			uniqueInputs: op.uniqueInputs ?? false,
 
 			inputs: op.inputs.map((port) => ({
 				id: uuidv4(),
@@ -172,8 +171,6 @@ export class WorkflowWrapper {
 			sourcePortId,
 			target: targetId,
 			targetPortId,
-			createdBy: 'dummy',
-			createdAt: Date.now(),
 			points: _.cloneDeep(points)
 		};
 		this.wf.edges.push(edge);

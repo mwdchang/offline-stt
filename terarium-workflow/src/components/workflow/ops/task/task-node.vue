@@ -1,7 +1,7 @@
 <template>
 	<main>
     <p>{{ node.state.description }}</p>
-    <Button @click="emit('open-drilldown')">Drilldown</Button>
+    <Button @click="emit('open-drilldown')">Open</Button>
   </main>
 </template>
 

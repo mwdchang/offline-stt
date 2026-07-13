@@ -3,8 +3,6 @@
 	<tera-infinite-canvas
 		@click="onCanvasClick()"
 		@save-transform="saveTransform"
-		@focus="() => {}"
-		@blur="() => {}"
 		@dragover.prevent
 		@dragenter.prevent
 		:lastTransform="canvasTransform"
@@ -131,7 +129,7 @@ const registry = new workflowService.WorkflowRegistry();
 registry.registerOp(TaskOp);
 
 const props = defineProps<{
-	assetId: string;
+  workflow: Workflow;
 }>();
 
 const upstreamOperatorsNav = ref<MenuItem[]>([]);
@@ -304,9 +302,12 @@ const handleDrilldown = () => {
 };
 
 watch(
-	() => props.assetId,
-	async () => {},
-	{ immediate: true }
+	() => props.workflow,
+	() => {
+    if (props.workflow) {
+      wf.value.load(props.workflow);
+    }
+  }
 );
 
 watch(
@@ -319,25 +320,7 @@ watch(
 
 onMounted(() => {
 	document.addEventListener('mousemove', mouseUpdate);
-
-  // Testing
-  const testWF: Workflow = workflowService.emptyWorkflow();
-  wf.value.load(testWF);
-
-  const n1 = wf.value.addNode(TaskOp.operation, { x: 300, y: 200 }, { state: { description: 'drone delivery' }})
-  const n2 = wf.value.addNode(TaskOp.operation, { x: 300, y: 600 }, { state: { description: 'route model' }})
-  const n3 = wf.value.addNode(TaskOp.operation, { x: 600, y: 400 }, { state: { description: 'drone model' }})
-
-  wf.value.addEdge(n1.id, n1.outputs[0]!.id, n3.id, n3.inputs[0]!.id, [
-    { x: 0, y: 0 },
-    { x: 1, y: 1 }
-  ]);
-
-  wf.value.addEdge(n2.id, n2.outputs[0]!.id, n3.id, n3.inputs[0]!.id, [
-    { x: 0, y: 0 },
-    { x: 1, y: 1 }
-  ]);
-  wf.value.runDagreLayout();
+  wf.value.load(props.workflow);
 });
 
 onUnmounted(() => {
