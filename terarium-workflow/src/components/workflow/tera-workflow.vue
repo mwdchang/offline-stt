@@ -111,8 +111,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import TeraInfiniteCanvas from '@/components/widgets/tera-infinite-canvas.vue';
 import TeraCanvasItem from '@/components/widgets/tera-canvas-item.vue';
-import type { Position } from '@/types/common';
-import type { Workflow, WorkflowEdge, WorkflowNode, } from '@/types/workflow';
+import type { Workflow, WorkflowEdge, WorkflowNode, Position } from '@/types/workflow';
 import { WorkflowDirection } from '@/types/workflow';
 
 // Operation imports

@@ -1,4 +1,7 @@
-import type { Position } from '@/types/common';
+export interface Position {
+	x: number;
+	y: number;
+}
 
 export enum OperatorStatus {
 	DEFAULT = 'default',

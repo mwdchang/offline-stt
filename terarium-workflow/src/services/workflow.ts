@@ -5,12 +5,12 @@ import {
 	type Operation,
 	type Workflow,
 	type WorkflowNode,
+  type Position,
     WorkflowPortStatus,
     OperatorStatus,
     type WorkflowEdge,
 } from '@/types/workflow';
 import dagre from 'dagre';
-import type { Position } from '@/types/common';
 
 /**
  * A wrapper class around the workflow data struture to make it easier
