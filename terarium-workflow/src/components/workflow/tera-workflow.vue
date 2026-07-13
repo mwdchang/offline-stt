@@ -36,7 +36,6 @@
 						<component
 							:is="registry.getNode(node.operationType)"
 							:node="node"
-              @update-state="(_event: any) => {}"
 							@open-drilldown="addOperatorToRoute(node.id)"
 						/>
 					</template>
@@ -116,7 +115,7 @@ import TeraInfiniteCanvas from '@/components/widgets/tera-infinite-canvas.vue';
 import TeraCanvasItem from '@/components/widgets/tera-canvas-item.vue';
 import type { Position } from '@/types/common';
 import type { Workflow, WorkflowEdge, WorkflowNode, } from '@/types/workflow';
-import { WorkflowDirection, OperatorStatus, } from '@/types/workflow';
+import { WorkflowDirection } from '@/types/workflow';
 
 // Operation imports
 import TeraOperator from '@/components/operator/tera-operator.vue';
@@ -153,9 +152,6 @@ const dialogIsOpened = ref(false);
 
 const wf = ref<workflowService.WorkflowWrapper>(new workflowService.WorkflowWrapper());
 const teraOperatorRefs = ref();
-
-const nodePositionSet: Set<string> = new Set();
-const edgePositionSet: Set<string> = new Set();
 
 
 // Route is mutated then watcher is triggered to open or close the drilldown
@@ -225,7 +221,6 @@ function relinkEdges(node: WorkflowNode<any> | null) {
 		edge.points[0]!.y = sourceNode!.y + sourcePortElem.offsetTop + sourcePortElem.offsetHeight * 0.5;
 		edge.points[1]!.x = targetNode!.x + targetPortElem.offsetWidth * 0.5;
 		edge.points[1]!.y = targetNode!.y + targetPortElem.offsetTop + targetPortElem.offsetHeight * 0.5;
-		edgePositionSet.add(edge.id);
 	}
 }
 
@@ -254,12 +249,10 @@ function updateEdgePositions(node: WorkflowNode<any>, { x, y }: Position) {
 		if (edge.source === node.id) {
 			edge.points[0].x += x / canvasTransform.k;
 			edge.points[0].y += y / canvasTransform.k;
-			edgePositionSet.add(edge.id);
 		}
 		if (edge.target === node.id) {
 			edge.points[edge.points.length - 1].x += x / canvasTransform.k;
 			edge.points[edge.points.length - 1].y += y / canvasTransform.k;
-			edgePositionSet.add(edge.id);
 		}
 	});
 }
@@ -272,7 +265,6 @@ const updatePosition = (node: WorkflowNode<any>, { x, y }: Position) => {
 	isDragging = true;
 	node.x += x / canvasTransform.k;
 	node.y += y / canvasTransform.k;
-	nodePositionSet.add(node.id);
 	updateEdgePositions(node, { x, y });
 };
 
@@ -332,8 +324,8 @@ onMounted(() => {
   const testWF: Workflow = workflowService.emptyWorkflow();
   wf.value.load(testWF);
 
-  const n1 = wf.value.addNode(TaskOp.operation, { x: 300, y: 200 }, { state: { description: 'weather model' }})
-  const n2 = wf.value.addNode(TaskOp.operation, { x: 300, y: 600 }, { state: { descripiton: 'route model' }})
+  const n1 = wf.value.addNode(TaskOp.operation, { x: 300, y: 200 }, { state: { description: 'drone delivery' }})
+  const n2 = wf.value.addNode(TaskOp.operation, { x: 300, y: 600 }, { state: { description: 'route model' }})
   const n3 = wf.value.addNode(TaskOp.operation, { x: 600, y: 400 }, { state: { description: 'drone model' }})
 
   wf.value.addEdge(n1.id, n1.outputs[0]!.id, n3.id, n3.inputs[0]!.id, [

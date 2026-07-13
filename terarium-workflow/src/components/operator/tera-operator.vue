@@ -28,7 +28,6 @@
       v-if="node.outputs.filter(d => d.status === 'connected').length"
 			:outputs="node.outputs"
 			:menu-options="menuOptions"
-			@menu-selection="(operatorType: string, outputPort: WorkflowPort) => onSelection(operatorType, outputPort)"
 			@port-selected="(input: WorkflowPort, direction: WorkflowDirection) => emit('port-selected', input, direction)"
 			@remove-edges="(portId: string) => emit('remove-edges', portId)"
 		/>
@@ -52,7 +51,6 @@ const props = defineProps<{
 
 const emit = defineEmits([
 	'port-selected',
-	'menu-selection',
 	'remove-operator',
 	'remove-edges',
 	'resize',
@@ -65,10 +63,6 @@ const interactionStatus = ref(0); // States will be added to it thorugh bitmaski
 const menuOptions = ref<OperatorMenuItem[] | []>([]);
 
 let resizeObserver: ResizeObserver | null = null;
-
-function onSelection(operatorType: string, outputPort: WorkflowPort) {
-	emit('menu-selection', operatorType, outputPort);
-}
 
 function resizeHandler() {
 	emit('resize', props.node);
@@ -127,6 +121,7 @@ main {
 	/* Shared styles between tera-operator-inputs and tera-operator-outputs */
 	& > ul {
 		padding: 0.5rem 0;
+    margin: 0;
 		list-style: none;
 		font-size: var(--font-caption);
 		color: var(--text-color-subdued);
@@ -150,10 +145,6 @@ main {
 			font-size: var(--font-caption);
 			min-width: fit-content;
 			padding: 0 0.25rem;
-		}
-
-		&:deep(.unlink) {
-			display: none;
 		}
 
 		&:deep(.port-connected) {

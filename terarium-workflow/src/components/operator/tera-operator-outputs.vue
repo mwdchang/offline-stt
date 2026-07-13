@@ -6,8 +6,6 @@
 			:key="output.id"
 			:class="{ 'port-connected': output.status === WorkflowPortStatus.CONNECTED }"
 			@click.stop="emit('port-selected', output, WorkflowDirection.FROM_OUTPUT)"
-			@focus="() => {}"
-			@focusout="() => {}"
 			@mousedown.stop="emit('port-selected', output, WorkflowDirection.FROM_OUTPUT)"
 			@mouseup.stop="emit('port-selected', output, WorkflowDirection.FROM_OUTPUT)"
 		>
@@ -31,8 +29,7 @@ import { WorkflowPortStatus, WorkflowDirection } from '@/types/workflow';
 import type { OperatorMenuItem } from '@/services/workflow';
 
 const emit = defineEmits([
-	'port-selected',
-	'menu-selection'
+	'port-selected'
 ]);
 
 const props = defineProps({
@@ -71,15 +68,6 @@ li > section {
 
 li > *:not(:first-child) {
 	margin-right: calc(var(--port-base-size) * 2);
-}
-
-li:hover:before {
-	content: '';
-	position: absolute;
-	width: 6.5rem;
-	height: 4rem;
-	bottom: -0.75rem;
-	right: -8rem;
 }
 
 .port-container {

@@ -6,8 +6,6 @@
 			:key="input.id"
 			:class="{ 'port-connected': input.status === WorkflowPortStatus.CONNECTED }"
 			@click.stop="emit('port-selected', input, WorkflowDirection.FROM_INPUT)"
-			@focus="() => {}"
-			@focusout="() => {}"
 			@mousedown.stop="emit('port-selected', input, WorkflowDirection.FROM_INPUT)"
 			@mouseup.stop="emit('port-selected', input, WorkflowDirection.FROM_INPUT)"
 		>
