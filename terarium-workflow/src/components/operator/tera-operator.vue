@@ -16,9 +16,8 @@
 			@duplicate-branch="emit('duplicate-branch')"
 		/>
 		<tera-operator-inputs
+      v-if="node.inputs.filter(d => d.status === 'connected').length"
 			:inputs="node.inputs"
-			@port-mouseover="(event) => mouseoverPort(event, PortType.Input)"
-			@port-mouseleave="emit('port-mouseleave')"
 			@port-selected="(input: WorkflowPort, direction: WorkflowDirection) => emit('port-selected', input, direction)"
 			@remove-edges="(portId: string) => emit('remove-edges', portId)"
 		/>
@@ -26,11 +25,10 @@
 			<slot name="body" />
 		</section>
 		<tera-operator-outputs
+      v-if="node.outputs.filter(d => d.status === 'connected').length"
 			:outputs="node.outputs"
 			:menu-options="menuOptions"
 			@menu-selection="(operatorType: string, outputPort: WorkflowPort) => onSelection(operatorType, outputPort)"
-			@port-mouseover="(event) => mouseoverPort(event, PortType.Output)"
-			@port-mouseleave="mouseleavePort"
 			@port-selected="(input: WorkflowPort, direction: WorkflowDirection) => emit('port-selected', input, direction)"
 			@remove-edges="(portId: string) => emit('remove-edges', portId)"
 		/>
@@ -40,9 +38,8 @@
 <script setup lang="ts">
 import type { WorkflowNode, WorkflowPort } from '@/types/workflow';
 import { WorkflowDirection } from '@/types/workflow';
-import type { Position } from '@/types/common';
 import { addDrag, addHover, removeDrag, removeHover } from '@/services/operator-bitmask';
-import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import TeraOperatorHeader from '@/components/operator/tera-operator-header.vue';
 import TeraOperatorInputs from '@/components/operator/tera-operator-inputs.vue';
 import TeraOperatorOutputs from '@/components/operator/tera-operator-outputs.vue';
@@ -55,8 +52,6 @@ const props = defineProps<{
 
 const emit = defineEmits([
 	'port-selected',
-	'port-mouseover',
-	'port-mouseleave',
 	'menu-selection',
 	'remove-operator',
 	'remove-edges',
@@ -65,33 +60,11 @@ const emit = defineEmits([
 	'update-state'
 ]);
 
-enum PortType {
-	Input,
-	Output
-}
-
 const operator = ref<HTMLElement>();
 const interactionStatus = ref(0); // States will be added to it thorugh bitmasking
 const menuOptions = ref<OperatorMenuItem[] | []>([]);
 
 let resizeObserver: ResizeObserver | null = null;
-
-function mouseoverPort(event: MouseEvent, portType: PortType) {
-	const el = event.target as HTMLElement;
-	const portElement = (el.querySelector('.port') as HTMLElement) ?? el;
-	const nodePosition: Position = { x: props.node.x, y: props.node.y };
-	const totalOffsetY = portElement.offsetTop + portElement.offsetHeight / 2;
-	const w = portType === PortType.Input ? 0 : props.node.width;
-	const portPosition = {
-		x: nodePosition.x + w + portElement.offsetWidth * 0.5,
-		y: nodePosition.y + totalOffsetY
-	};
-	emit('port-mouseover', portPosition);
-}
-
-function mouseleavePort() {
-	emit('port-mouseleave');
-}
 
 function onSelection(operatorType: string, outputPort: WorkflowPort) {
 	emit('menu-selection', operatorType, outputPort);
@@ -163,16 +136,7 @@ main {
 			display: flex;
 			flex-direction: column;
 			gap: 0.25rem;
-			cursor: pointer;
-		}
-
-		&:deep(> li:hover) {
-			background-color: var(--surface-highlight);
-		}
-
-		&:deep(li:hover .port) {
-			background-color: var(--primary-color);
-			background-color: var(--surface-border);
+      pointer-events: none;
 		}
 
 		&:deep(> li > section) {
@@ -190,14 +154,6 @@ main {
 
 		&:deep(.unlink) {
 			display: none;
-		}
-
-		&:deep(.port-connected:hover .unlink) {
-			display: block;
-			color: var(--text-color-primary);
-			padding: 0.25rem 0.5rem;
-			background-color: var(--surface-0);
-			border: solid 1px var(--surface-border);
 		}
 
 		&:deep(.port-connected) {
@@ -239,9 +195,6 @@ main {
 			background-color: var(--text-color-subdued);
 		}
 
-		&:deep(.port-connected:hover .port) {
-			background-color: var(--text-color-subdued);
-		}
 	}
 }
 </style>

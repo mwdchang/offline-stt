@@ -5,18 +5,6 @@
 			:id="output.id"
 			:key="output.id"
 			:class="{ 'port-connected': output.status === WorkflowPortStatus.CONNECTED }"
-			@mouseenter="
-				($event) => {
-					menuFocusId = output.id;
-					emit('port-mouseover', $event);
-				}
-			"
-			@mouseleave="
-				() => {
-					menuFocusId = null;
-					emit('port-mouseleave');
-				}
-			"
 			@click.stop="emit('port-selected', output, WorkflowDirection.FROM_OUTPUT)"
 			@focus="() => {}"
 			@focusout="() => {}"
@@ -28,7 +16,7 @@
 					<div class="port" />
 				</div>
 				<div class="relative w-full">
-					<div class="truncate text-right">{{ getOutputLabel(outputs, output.id) }}</div>
+					<div class="truncate text-right"></div>
 				</div>
 			</section>
 		</li>
@@ -37,19 +25,13 @@
 
 <script setup lang="ts">
 import type { PropType } from 'vue';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import type { WorkflowOutput } from '@/types/workflow';
 import { WorkflowPortStatus, WorkflowDirection } from '@/types/workflow';
 import type { OperatorMenuItem } from '@/services/workflow';
-import { getOutputLabel } from '@/services/workflow';
-
-const menuFocusId = ref<string | null>(null);
 
 const emit = defineEmits([
-	'port-mouseover',
 	'port-selected',
-	'port-mouseover',
-	'port-mouseleave',
 	'menu-selection'
 ]);
 
@@ -119,12 +101,6 @@ li:hover:before {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-}
-
-.unlink {
-	position: absolute;
-	top: -0.35rem;
-	left: -0.35rem;
 }
 
 /** These v-* classes are used for animations for the <Transition /> element */

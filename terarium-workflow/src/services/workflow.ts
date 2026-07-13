@@ -107,7 +107,6 @@ export class WorkflowWrapper {
 			operationType: op.name,
 			displayName: op.displayName,
 			documentationUrl: op.documentationUrl,
-			imageUrl: op.imageUrl,
 			x: pos.x,
 			y: pos.y,
 
@@ -206,20 +205,6 @@ export enum OperatorNodeSize {
 	large,
 	xlarge
 }
-
-export function getOutputLabel(outputs: WorkflowOutput<any>[], id: string) {
-	const selectedOutput = outputs.find((output) => output.id === id);
-	if (!selectedOutput) return '';
-
-	// multiple output types, choose first name to use as label arbitrarily
-	if (selectedOutput.type.includes('|')) {
-		return selectedOutput.label;
-	}
-
-	// default use single output type
-	return selectedOutput.label;
-}
-
 
 /// /////////////////////////////////////////////////////////////////////////////
 // Workflow component registry, this is used to

@@ -1,21 +1,25 @@
 import type { Operation, BaseState } from '@/types/workflow';
 
 export interface TaskOperationState extends BaseState {
+  id: string;
+  modelId: string;
+  description: string;
 }
 
 export const TaskOperation: Operation = {
 	name: 'Task',
 	displayName: 'Task',
-	description: 'Testing',
+	description: 'Task operator',
 	documentationUrl: undefined,
-	imageUrl: undefined,
-	isRunnable: true,
 	inputs: [
     { type: 'string', label: '' }
   ],
 	outputs: [{ type: 'string', label: '' }],
-	action: async () => ({}),
 	initState: () => {
-		return { str: '' }
+		return { 
+      id: '',
+      modelId: '',
+      description: ''
+    }
 	}
 };

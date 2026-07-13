@@ -1,6 +1,6 @@
 <template>
 	<main>
-    <p>Drone model</p>
+    <p>{{ node.state.description }}</p>
     <Button @click="emit('open-drilldown')">Drilldown</Button>
   </main>
 </template>

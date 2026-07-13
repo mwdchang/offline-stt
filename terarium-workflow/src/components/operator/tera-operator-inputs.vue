@@ -5,8 +5,6 @@
 			:id="input.id"
 			:key="input.id"
 			:class="{ 'port-connected': input.status === WorkflowPortStatus.CONNECTED }"
-			@mouseenter="emit('port-mouseover', $event)"
-			@mouseleave="emit('port-mouseleave')"
 			@click.stop="emit('port-selected', input, WorkflowDirection.FROM_INPUT)"
 			@focus="() => {}"
 			@focusout="() => {}"
@@ -31,7 +29,7 @@ import type { PropType } from 'vue';
 import type { WorkflowPort }from '@/types/workflow';
 import { WorkflowPortStatus, WorkflowDirection } from '@/types/workflow';
 
-const emit = defineEmits(['port-mouseover', 'port-selected', 'port-mouseover', 'port-mouseleave' ]);
+const emit = defineEmits(['port-selected']);
 
 defineProps({
 	inputs: {
@@ -68,9 +66,4 @@ label:not(:last-child)::after {
 	text-overflow: ellipsis;
 }
 
-.unlink {
-	position: absolute;
-	top: -0.35rem;
-	right: -0.35rem;
-}
 </style>

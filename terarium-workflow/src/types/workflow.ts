@@ -26,15 +26,8 @@ export interface Operation {
 	description: string;
 	displayName: string; // Human-readable name for each node.
 	documentationUrl?: string;
-	imageUrl?: string;
-
-	// The operation is self-runnable, that is, given just the inputs we can derive the outputs
-	isRunnable: boolean;
 
 	initState?: Function;
-
-	action?: Function;
-	validation?: Function;
 
 	inputs: OperationData[];
 	outputs: OperationData[];

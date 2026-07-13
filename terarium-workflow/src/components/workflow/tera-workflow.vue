@@ -2,7 +2,6 @@
 	<!-- add 'debug-mode' to debug this -->
 	<tera-infinite-canvas
 		@click="onCanvasClick()"
-		@contextmenu="toggleContextMenu"
 		@save-transform="saveTransform"
 		@focus="() => {}"
 		@blur="() => {}"
@@ -32,15 +31,11 @@
 					:node="node"
 					:nodeMenu="new Map()"
 					@resize="resizeHandler"
-					@port-mouseover="onPortMouseover"
-					@port-mouseleave="onPortMouseleave"
 				>
 					<template #body>
 						<component
 							:is="registry.getNode(node.operationType)"
 							:node="node"
-              @append-output="(_port: any, _newState: any) => {}"
-              @append-input-port="(_event: any) => {}"
               @update-state="(_event: any) => {}"
 							@open-drilldown="addOperatorToRoute(node.id)"
 						/>
@@ -147,7 +142,6 @@ const drilldownSpawnAnimation = ref<'left' | 'right' | 'scale'>('scale');
 const route = useRoute();
 const router = useRouter();
 
-const newNodePosition = { x: 0, y: 0 };
 let canvasTransform = { x: 0, y: 0, k: 1 };
 let currentPortPosition: Position = { x: 0, y: 0 };
 let isMouseOverPort: boolean = false;
@@ -158,10 +152,6 @@ const newEdge = ref<WorkflowEdge | undefined>();
 const dialogIsOpened = ref(false);
 
 const wf = ref<workflowService.WorkflowWrapper>(new workflowService.WorkflowWrapper());
-const contextMenu = ref();
-
-const currentProjectId = ref<string | null>(null);
-
 const teraOperatorRefs = ref();
 
 const nodePositionSet: Set<string> = new Set();
@@ -179,17 +169,6 @@ function addOperatorToRoute(
 	} else {
 		router.push({ query: {} });
 	}
-}
-
-
-function toggleContextMenu(event: MouseEvent) {
-	contextMenu.value.show(event);
-	updateNewNodePosition(event);
-}
-
-function updateNewNodePosition(event: MouseEvent) {
-	newNodePosition.x = (event.offsetX - canvasTransform.x) / canvasTransform.k;
-	newNodePosition.y = (event.offsetY - canvasTransform.y) / canvasTransform.k;
 }
 
 function saveTransform(newTransform: { k: number; x: number; y: number }) {
@@ -211,15 +190,6 @@ function onCanvasClick() {
 
 function cancelNewEdge() {
 	newEdge.value = undefined;
-}
-
-function onPortMouseover(position: Position) {
-	currentPortPosition = position;
-	isMouseOverPort = true;
-}
-
-function onPortMouseleave() {
-	isMouseOverPort = false;
 }
 
 function resizeHandler(node: WorkflowNode<any>) {
@@ -319,8 +289,6 @@ const pathFn = d3
 
 // Get around typescript complaints
 const drawPath = (v: any) => pathFn(v) as string;
-const hasInvalidNodes = computed(() => wf.value.getNodes().some((node) => node.status === OperatorStatus.INVALID));
-
 
 const openDrilldown = (node: WorkflowNode<any>) => {
   console.log('node', node.operationType);
@@ -342,6 +310,7 @@ const handleDrilldown = () => {
 		closeDrilldown();
 	}
 };
+
 watch(
 	() => props.assetId,
 	async () => {},
@@ -363,9 +332,9 @@ onMounted(() => {
   const testWF: Workflow = workflowService.emptyWorkflow();
   wf.value.load(testWF);
 
-  const n1 = wf.value.addNode(TaskOp.operation, { x: 300, y: 200 }, { state: { str: 'weather model' }})
-  const n2 = wf.value.addNode(TaskOp.operation, { x: 300, y: 600 }, { state: { str: 'route model' }})
-  const n3 = wf.value.addNode(TaskOp.operation, { x: 600, y: 400 }, { state: { str: 'drone model' }})
+  const n1 = wf.value.addNode(TaskOp.operation, { x: 300, y: 200 }, { state: { description: 'weather model' }})
+  const n2 = wf.value.addNode(TaskOp.operation, { x: 300, y: 600 }, { state: { descripiton: 'route model' }})
+  const n3 = wf.value.addNode(TaskOp.operation, { x: 600, y: 400 }, { state: { description: 'drone model' }})
 
   wf.value.addEdge(n1.id, n1.outputs[0]!.id, n3.id, n3.inputs[0]!.id, [
     { x: 0, y: 0 },
@@ -377,7 +346,6 @@ onMounted(() => {
     { x: 1, y: 1 }
   ]);
   wf.value.runDagreLayout();
-	currentProjectId.value = 'Testing';
 });
 
 onUnmounted(() => {

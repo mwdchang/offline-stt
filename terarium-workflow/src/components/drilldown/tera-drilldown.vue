@@ -142,6 +142,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyNavigation));
 
 	& > section {
 		flex: 1;
+    margin: 1rem;
 		background: var(--surface-0);
 		border-radius: var(--modal-border-radius) var(--modal-border-radius) 0 0;
 		display: flex;
